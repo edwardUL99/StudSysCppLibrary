@@ -5,7 +5,7 @@ SOURCES=$(shell find ./sources -name "*.cpp")
 all: libstudsys.so
 
 libstudsys.so: $(SOURCES)
-	$(CXX) $(CXXFLAGS) $(SOURCES) -o libstudsys.so
+	$(CXX) $(CXXFLAGS) $(SOURCES) -lmysqlcppconn -o libstudsys.so
 
 clean:
 	$(RM) $(OBJECTS)
