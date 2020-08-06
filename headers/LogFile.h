@@ -4,6 +4,9 @@
 #include <string>
 
 namespace logging {
+    /**
+      * This class represents a log file that is being written to
+      */
     class LogFile {
     private:
         std::string fileName;

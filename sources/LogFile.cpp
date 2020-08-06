@@ -27,7 +27,6 @@ void LogFile::setContent(string content) {
 void LogFile::appendToFile(string line, bool newLine) {
     if (newLine)
         line += "\n";
-    
     this->content += line;
 }
 
