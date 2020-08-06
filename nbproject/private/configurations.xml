@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="100">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="." name="0">
+      <df name="headers">
+        <in>Account.h</in>
+        <in>Announcement.h</in>
+        <in>ConfigFileProcessor.h</in>
+        <in>Course.h</in>
+        <in>DatabaseItem.h</in>
+        <in>DatabaseManager.h</in>
+        <in>DuplicateException.h</in>
+        <in>Exam.h</in>
+        <in>ExamAnswer.h</in>
+        <in>ExamGrade.h</in>
+        <in>ExamQuestion.h</in>
+        <in>ExamSubmission.h</in>
+        <in>KeyMismatch.h</in>
+        <in>Lecturer.h</in>
+        <in>LecturerAccount.h</in>
+        <in>LogFile.h</in>
+        <in>Module.h</in>
+        <in>ModuleGrade.h</in>
+        <in>NotAnswerKeyException.h</in>
+        <in>NotFoundException.h</in>
+        <in>NotLoggedInException.h</in>
+        <in>Person.h</in>
+        <in>Predicate.h</in>
+        <in>Student.h</in>
+        <in>StudentAccount.h</in>
+        <in>StudentRegistration.h</in>
+        <in>StudentSystem.h</in>
+        <in>Tables.h</in>
+        <in>Warning.h</in>
+      </df>
+      <df name="sources">
+        <df name="headers">
+          <in>Account.h</in>
+          <in>Announcement.h</in>
+          <in>ConfigFileProcessor.h</in>
+          <in>Course.h</in>
+          <in>DatabaseItem.h</in>
+          <in>DatabaseManager.h</in>
+          <in>DuplicateException.h</in>
+          <in>Exam.h</in>
+          <in>ExamAnswer.h</in>
+          <in>ExamGrade.h</in>
+          <in>ExamQuestion.h</in>
+          <in>ExamSubmission.h</in>
+          <in>KeyMismatch.h</in>
+          <in>Lecturer.h</in>
+          <in>LecturerAccount.h</in>
+          <in>LogFile.h</in>
+          <in>Module.h</in>
+          <in>ModuleGrade.h</in>
+          <in>NotAnswerKeyException.h</in>
+          <in>NotFoundException.h</in>
+          <in>NotLoggedInException.h</in>
+          <in>Person.h</in>
+          <in>Predicate.h</in>
+          <in>Student.h</in>
+          <in>StudentAccount.h</in>
+          <in>StudentRegistration.h</in>
+          <in>StudentSystem.h</in>
+          <in>Tables.h</in>
+          <in>Warning.h</in>
+        </df>
+        <in>Account.cpp</in>
+        <in>Announcement.cpp</in>
+        <in>ConfigFileProcessor.cpp</in>
+        <in>Course.cpp</in>
+        <in>DatabaseManager.cpp</in>
+        <in>DuplicateException.cpp</in>
+        <in>Exam.cpp</in>
+        <in>ExamAnswer.cpp</in>
+        <in>ExamGrade.cpp</in>
+        <in>ExamQuestion.cpp</in>
+        <in>ExamSubmission.cpp</in>
+        <in>KeyMismatch.cpp</in>
+        <in>Lecturer.cpp</in>
+        <in>LecturerAccount.cpp</in>
+        <in>LogFile.cpp</in>
+        <in>Module.cpp</in>
+        <in>ModuleGrade.cpp</in>
+        <in>NotAnswerKeyException.cpp</in>
+        <in>NotFoundException.cpp</in>
+        <in>NotLoggedInException.cpp</in>
+        <in>Person.cpp</in>
+        <in>Predicate.cpp</in>
+        <in>Student.cpp</in>
+        <in>StudentAccount.cpp</in>
+        <in>StudentRegistration.cpp</in>
+        <in>StudentSystem.cpp</in>
+        <in>Warning.cpp</in>
+      </df>
+    </df>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>.</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>
