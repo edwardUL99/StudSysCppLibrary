@@ -60,7 +60,7 @@ void Logger::removeLogFile(const string &fileName) {
 }
 
 boost::optional<LogFile> Logger::findLogFile(const string &fileName) const {
-    map<string, LogFile>::iterator filesIterator = logFiles.find(fileName);
+    map<string, LogFile>::const_iterator filesIterator = logFiles.find(fileName);
 
     if (filesIterator != logFiles.end()) {
         return filesIterator->second;
