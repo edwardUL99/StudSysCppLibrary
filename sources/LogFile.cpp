@@ -1,6 +1,7 @@
 #include "headers/LogFile.h"
 
 using std::string;
+using std::ostream;
 using logging::LogFile;
 
 LogFile::LogFile(string fileName, string content) {
@@ -24,10 +25,18 @@ void LogFile::setContent(string content) {
     this->content = content;
 }
 
-void LogFile::appendToFile(string line, bool newLine) {
+string LogFile::appendToFile(string line, bool newLine) {
     if (newLine)
         line += "\n";
     this->content += line;
+    
+    return line;
 }
 
+bool LogFile::operator==(const LogFile &logFile) const {
+    return this->fileName == logFile.fileName;
+}
 
+bool LogFile::operator<(const LogFile &logFile) const {
+    return this->fileName < logFile.fileName;
+}

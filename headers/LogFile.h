@@ -11,12 +11,13 @@ namespace logging {
     private:
         std::string fileName;
         std::string content;
-        
+
     public:
         /**
          * Constructs a LogFile object
          * @param fileName the name of the file
          * @param content the content to write if already present
+         * @param append whether you should append to the logfile on the hard drive
          */
         LogFile(std::string fileName = "", std::string content = "");
         /**
@@ -43,8 +44,21 @@ namespace logging {
          * Appends the specified line to this LogFile
          * @param line the line to append
          * @param newLine true if you want to attach a new line to the end(default)
+         * @return the line with any newLine characters on it if specified
          */
-        void appendToFile(std::string line, bool newLine = true);
+        std::string appendToFile(std::string line, bool newLine = true);
+        /**
+         * Checks the equality of this log file with the provided one by checking the equality of their file names only, not the contents
+         * @param logFile the logfile to compare
+         * @return true if equal
+         */
+        bool operator==(const LogFile &logFile) const;
+        /**
+         * Checks if this log file is lexicographically less than the provided log file by comparing their file names
+         * @param logFile the file to compare
+         * @return true if this log file is lexicographically less than the supplied log file
+         */
+        bool operator<(const LogFile &logFile) const;
     };
 }
 
