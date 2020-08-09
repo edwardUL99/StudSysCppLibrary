@@ -13,11 +13,13 @@
 #include "headers/StudentAccount.h"
 #include "headers/KeyMismatch.h"
 #include "headers/ExamAnswer.h"
+#include "headers/Logging.h"
 #include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <ctime>
 
 using std::cerr;
 using std::cout;
@@ -27,6 +29,7 @@ using std::ofstream;
 using std::string;
 using std::stringstream;
 using std::vector;
+using logging::LogTypes;
 
 const map<Tables, string> DatabaseManager::tableNames = {
     {LECTURERS, "lecturers"},
@@ -43,8 +46,13 @@ const map<Tables, string> DatabaseManager::tableNames = {
     {LECTURER_ACCOUNTS, "lecturer_accounts"},
     {STUDENT_ACCOUNTS, "student_accounts"}};
 
-DatabaseManager::DatabaseManager()
+DatabaseManager::DatabaseManager(bool logging)
 {
+    this->logging = logging;
+    this->logFileName = getenv("STUDSYS_LOG_DIR");
+    if (this->logFileName.size() == 0)
+        logging = false;
+    initialiseLogger();
     this->connection = NULL;
     this->driver = NULL;
     this->stmt = NULL;
@@ -54,6 +62,9 @@ DatabaseManager::DatabaseManager(const DatabaseManager &databaseManager) {
     this->driver = NULL;
     this->connection = NULL;
     this->stmt = NULL;
+    this->logging = databaseManager.logging;
+    this->logFileName = databaseManager.logFileName;
+    initialiseLogger();
     this->user = databaseManager.user;
     this->host = databaseManager.host;
     this->database = databaseManager.database;
@@ -64,9 +75,28 @@ DatabaseManager::DatabaseManager(const DatabaseManager &databaseManager) {
 
 DatabaseManager::~DatabaseManager()
 {
-    this->writeWarningsToLog();
     delete this->stmt;
     delete this->connection;
+}
+
+void DatabaseManager::initialiseLogger() {
+    if (logging) {
+        logging::LogFile logFile;
+        logFile.setFileName(this->logFileName);
+        logging::logger.addLogFile(logFile);
+    }
+}
+
+string DatabaseManager::formatQueryError(string query, string errorMessage) {
+    time_t ttime = time(0);
+    string dateTime = ctime(&ttime);
+
+    return dateTime + " " + errorMessage + "\n on Query: " + query;
+}
+
+void DatabaseManager::writeToLog(LogTypes type, string message) {
+    if (logging) 
+        logging::logger.appendToLogFile(logFileName, type, message, true);
 }
 
 void DatabaseManager::setLastExamID()
@@ -119,9 +149,7 @@ void DatabaseManager::connectToDatabase(string database, string user, string pas
         setLastExamID();
         setLastAnnouncementID();
     } catch (SQLException &sq) {
-        const char *error = sq.what();
-        Warning w(error, "DATABASE CONNECTION");
-        this->warnings.push_back(w);
+        writeToLog(LogTypes::ERROR, sq.what());
 
         cerr << "Failed to connect to database, see log for details" << endl;
         throw sq;
@@ -141,8 +169,8 @@ bool DatabaseManager::add(const Lecturer &lecturer)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -297,8 +325,8 @@ bool DatabaseManager::add(const Course &course)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -383,8 +411,8 @@ bool DatabaseManager::add(const Student &student)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -470,8 +498,8 @@ bool DatabaseManager::add(const Module &module)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -566,9 +594,9 @@ bool DatabaseManager::add(const Announcement &announcement) {
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
-
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+        
         delete prepared;
 
         return false;
@@ -647,9 +675,9 @@ bool DatabaseManager::add(const StudentRegistration &registration)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
-        
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+
         return false;
     }
 }
@@ -759,8 +787,8 @@ bool DatabaseManager::add(const Exam &exam)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -971,9 +999,9 @@ bool DatabaseManager::add(const ExamGrade &examGrade)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
-    
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+
         return false;
     }
 }
@@ -1060,8 +1088,8 @@ void DatabaseManager::calculateModuleGrades(std::string module, const Student &s
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
     }
 }
 
@@ -1119,8 +1147,8 @@ bool DatabaseManager::add(const LecturerAccount &lecturerAccount)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
 
         return false;
     }
@@ -1202,9 +1230,9 @@ bool DatabaseManager::add(const StudentAccount &studentAccount)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
-        
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+
         return false;
     }
 }
@@ -1281,8 +1309,8 @@ void DatabaseManager::execute(string query)
     catch (SQLException &e)
     {
         const char *error = e.what();
-        Warning w(error, query);
-        this->warnings.push_back(w);
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
     }
 }
 
@@ -1315,63 +1343,10 @@ void DatabaseManager::clearDatabase()
     setLastExamID();
 }
 
-vector<Warning> DatabaseManager::getWarnings() const
-{
-    return this->warnings;
-}
-
-void DatabaseManager::clearWarnings()
-{
-    this->warnings.clear();
-}
-
-void DatabaseManager::writeWarningsToLog()
-{
-    if (warnings.size() == 0)
-        return;
-
-    time_t now = time(0);
-
-    tm *ltm = localtime(&now);
-
-    stringstream s;
-    const char* logDir = std::getenv("STUD_LOGS");
-    if (logDir) {
-        s << logDir << "/" << ltm->tm_mday << "_" << ltm->tm_mon + 1 << "_" << 1900 + ltm->tm_year << "_" << ltm->tm_hour << ":" << ltm->tm_min << ":" << ltm->tm_sec << "_Database_Warnings.log";
-        string filename;
-        s >> filename;
-        ofstream writer;
-        writer.open(filename, std::ios::out);
-
-        if (writer.is_open())
-        {
-            for (const Warning &w : warnings)
-            {
-                writer << w.toString() << "\n";
-            }
-
-            if (this->connection) {
-                const SQLWarning *warning = this->connection->getWarnings();
-
-                while (warning != NULL) {
-                    Warning w(warning->getMessage(), "N/A");
-                    writer << w.toString() << "\n";
-                    warning = warning->getNextWarning();
-                }
-            }
-
-            writer.flush();
-        }
-    }
-}
-
 DatabaseManager &DatabaseManager::operator=(const DatabaseManager &manager) {
-    /*this->driver = get_driver_instance();
-    this->connection = this->driver->connect(manager.host, manager.user, manager.pass);
-    this->connection->setSchema(manager.database);
-    this->stmt = this->connection->createStatement();
-*/
-
+    this->logging = manager.logging;
+    this->logFileName = manager.logFileName;
+    initialiseLogger();
     this->host = manager.host;
     this->user = manager.user;
     this->pass = manager.pass;

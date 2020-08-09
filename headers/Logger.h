@@ -12,6 +12,15 @@ namespace logging
     class LogFile;
 
     /**
+     * An enum class to represent the log type to write
+     */
+    enum class LogTypes {
+        WARNING,
+        ERROR,
+        INFO
+    };
+
+    /**
      * This class is responsible for managing logging. It handles writing of logs and also adding to them
      */
     class Logger {
@@ -42,7 +51,7 @@ namespace logging
              * Adds the specified log file to this LOgger object
              * @param logFile the log file to add
              */
-            void addLogFile(const LogFile &logFile);
+            void addLogFile(LogFile logFile);
             /**
              * Attempts to remove the LogFile specified by the file name from this Logger
              * @param fileName the name of the log file
@@ -69,6 +78,24 @@ namespace logging
              * @return true if the operation was successful
              */
             bool appendToLogFile(const std::string &fileName, const std::string &line, bool newLine = true);
+            /**
+             * A convenience method to append the log type for you in the format [LOG_TYPE]: message
+             * @param fileName the name of the file to write to
+             * @param type the enumerated value depicting the type of this Log Message
+             * @param message the message to enter after the log type
+             * @param newLine true if you wish to add a new line
+             * @return true if the operation was successful
+             */
+            bool appendToLogFile(const std::string &fileName, LogTypes type, const std::string &message, bool newLine = true);
+            /**
+             * Flushes the file specified by the filename if it exists. It does nothing otherwise
+             * @param fileName the name of the log file
+             */
+            void flushFile(const std::string &fileName);
+            /**
+             * Flushes all the log files in this logger
+             */
+            void flushAll();
     };
 }
 

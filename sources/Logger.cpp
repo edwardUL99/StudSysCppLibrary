@@ -39,7 +39,7 @@ void Logger::initialiseMaps(const map<string, LogFile> &logFiles) {
     }
 }
 
-void Logger::addLogFile(const LogFile &logFile) {
+void Logger::addLogFile(LogFile logFile) {
     string fileName = logFile.getFileName();
     logFiles.insert(std::pair<string, LogFile>(fileName, logFile));
     logWriters.insert(std::pair<LogFile, ofstream>(logFile, ofstream(fileName)));
@@ -99,4 +99,27 @@ bool Logger::appendToLogFile(const std::string &fileName, const std::string &lin
     }
 
     return false;
+}
+
+bool Logger::appendToLogFile(const std::string &fileName, LogTypes type, const std::string &message, bool newLine) {
+    static map<LogTypes, string> logTypeMappings;
+    if (logTypeMappings.size() == 0) {
+        logTypeMappings.insert(std::pair<LogTypes, string>(LogTypes::ERROR, "[ERROR]: "));
+        logTypeMappings.insert(std::pair<LogTypes, string>(LogTypes::WARNING, "[WARNING]: "));
+        logTypeMappings.insert(std::pair<LogTypes, string>(LogTypes::INFO, "[INFO]: "));
+    }
+
+    return appendToLogFile(fileName, logTypeMappings.at(type) + message, newLine);
+}
+
+void Logger::flushFile(const std::string &fileName) {
+    try {
+        logWriters.at(logFiles.at(fileName)).flush();
+    } catch (std::out_of_range &ex) {}
+}
+
+void Logger::flushAll() {
+    for (map<LogFile, ofstream>::iterator it = logWriters.begin(); it != logWriters.end(); it++) {
+        it->second.flush();
+    }
 }
