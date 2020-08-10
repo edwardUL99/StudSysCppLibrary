@@ -99,8 +99,10 @@ string DatabaseManager::getDatabaseInfoString() {
 }
 
 void DatabaseManager::writeToLog(LogTypes type, string message) {
-    if (logging) 
-        logging::logger.appendToLogFile(logFileName, type, message, true);
+    if (logging) {
+        time_t ttime = time(0);
+        logging::logger.appendToLogFile(logFileName, type, message + " at " + ctime(&ttime), true);
+    }
 }
 
 void DatabaseManager::setLastExamID()
