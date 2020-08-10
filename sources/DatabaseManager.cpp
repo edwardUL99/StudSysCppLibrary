@@ -13,7 +13,6 @@
 #include "headers/StudentAccount.h"
 #include "headers/KeyMismatch.h"
 #include "headers/ExamAnswer.h"
-#include "headers/Logging.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -94,6 +93,11 @@ string DatabaseManager::formatQueryError(string query, string errorMessage) {
     return dateTime + " " + errorMessage + "\n on Query: " + query;
 }
 
+string DatabaseManager::getDatabaseInfoString() {
+    static string info("database " + database + " with user " + user + " on host " + host); 
+    return info;
+}
+
 void DatabaseManager::writeToLog(LogTypes type, string message) {
     if (logging) 
         logging::logger.appendToLogFile(logFileName, type, message, true);
@@ -117,6 +121,8 @@ void DatabaseManager::setLastExamID()
 
     Exam::setLastID(id); //set the last id to use with new exams
 
+    writeToLog(LogTypes::INFO, "Setting the ID to be used for future exams to " + std::to_string(id));
+
     delete res;
 }
 
@@ -129,6 +135,8 @@ void DatabaseManager::setLastAnnouncementID() {
     }
 
     Announcement::setLastID(id + 1);
+
+    writeToLog(LogTypes::INFO, "Setting the ID to be used for future announcements to " + std::to_string(id));
 
     delete res;
 }
@@ -146,10 +154,12 @@ void DatabaseManager::connectToDatabase(string database, string user, string pas
         this->connection->setSchema(this->database);
         delete this->stmt;
         this->stmt = this->connection->createStatement();
+        writeToLog(LogTypes::INFO, "Connecting to " + getDatabaseInfoString());
+
         setLastExamID();
         setLastAnnouncementID();
     } catch (SQLException &sq) {
-        writeToLog(LogTypes::ERROR, sq.what());
+        writeToLog(LogTypes::ERROR, string(sq.what()));
 
         cerr << "Failed to connect to database, see log for details" << endl;
         throw sq;
@@ -162,6 +172,7 @@ bool DatabaseManager::add(const Lecturer &lecturer)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding lecturer\n\t" + lecturer.getDescription() + "\nto " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true; //if you reached this line execute ran without any exceptions, so lecturer was added successfully. This is the same with other add methods
@@ -178,6 +189,8 @@ bool DatabaseManager::add(const Lecturer &lecturer)
 
 boost::optional<Lecturer> DatabaseManager::getLecturer(string email)
 {
+    writeToLog(LogTypes::INFO, "Retrieving lecturer with e-mail " + email + " from " + getDatabaseInfoString());
+
     ResultSet *res = executeQuery("SELECT * FROM lecturers WHERE email = '" + email + "';");
 
     if (res->next())
@@ -193,16 +206,16 @@ boost::optional<Lecturer> DatabaseManager::getLecturer(string email)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Lecturer with e-mail " + email + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Lecturer &lecturer) {
-    return (bool)getLecturer(lecturer.getID());
-}*/
 
 bool DatabaseManager::contains(const DatabaseItem &item)
 {
     Tables table = item.getTable();
+
+    writeToLog(LogTypes::INFO, "Querying table " + tableNames.at(table) + " for Database Item " + item.getDescription() + " in " + getDatabaseInfoString()); 
 
     switch (table)
     {
@@ -274,7 +287,9 @@ vector<Lecturer> DatabaseManager::getAllLecturers()
 {
     vector<Lecturer> lecturers;
 
-    ResultSet *res = executeQuery("SELECT id FROM lecturers;");
+    writeToLog(LogTypes::INFO, "Retrieving all lecturers from " + getDatabaseInfoString());
+
+    ResultSet *res = executeQuery("SELECT email FROM lecturers;");
 
     while (res->next())
     {
@@ -288,8 +303,13 @@ vector<Lecturer> DatabaseManager::getAllLecturers()
 
 bool DatabaseManager::remove(const Lecturer &lecturer)
 {
+    writeToLog(LogTypes::INFO, "Removing lecturer\n\t" + lecturer.getDescription() + " from " + getDatabaseInfoString());
+
     string email = "'" + lecturer.getEmail() + "'";
     bool removed = this->stmt->executeUpdate("DELETE FROM lecturers WHERE email = " + email + ";") != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Lecturer was not removed successfully");
 
     return removed;
 }
@@ -300,13 +320,19 @@ bool DatabaseManager::update(string email, const Lecturer &updatedLecturer)
 
     if (email != email1)
     {
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + email + " and  the updated lecturer's email: " + email1);
         throw KeyMismatch(email, email1);
     }
     else
     {
         string query = "UPDATE lecturers SET name = '" + updatedLecturer.getName() + "', age = " + std::to_string(updatedLecturer.getAge()) + ", department = '" + updatedLecturer.getDepartment() + "' WHERE email = '" + email + "';";
+        
+        writeToLog(LogTypes::INFO, "Updating lecturer with e-mail " + email + " with query " + query + " on " + getDatabaseInfoString());
 
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "The lecturer may not have been updated successfully");
 
         return updated;
     }
@@ -318,6 +344,7 @@ bool DatabaseManager::add(const Course &course)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding course\n\t" + course.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -336,6 +363,8 @@ boost::optional<Course> DatabaseManager::getCourse(string id)
 {
     ResultSet *res = executeQuery("SELECT * FROM courses WHERE id = '" + id + "';");
 
+    writeToLog(LogTypes::INFO, "Retrieving course with id " + id + " from " + getDatabaseInfoString());
+
     if (res->next())
     {
         string type = res->getString("type");
@@ -349,16 +378,16 @@ boost::optional<Course> DatabaseManager::getCourse(string id)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Course with id " + id + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Course &course) {
-    return (bool)getCourse(course.getID());
-}*/
 
 vector<Course> DatabaseManager::getAllCourses()
 {
     vector<Course> courses;
+
+    writeToLog(LogTypes::INFO, "Retrieving all courses from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM courses;");
 
@@ -375,7 +404,13 @@ vector<Course> DatabaseManager::getAllCourses()
 bool DatabaseManager::remove(const Course &course)
 {
     string c = "'" + course.getID() + "'";
+
+    writeToLog(LogTypes::INFO, "Removing course\n\t" + course.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = this->stmt->executeUpdate("DELETE FROM courses WHERE id = " + c + ";") != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Course was not removed successfully");
 
     return removed;
 }
@@ -386,13 +421,19 @@ bool DatabaseManager::update(string id, const Course &updatedCourse)
 
     if (id != id1)
     {
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + id + " and  the updated course's id: " + id1);
         throw KeyMismatch(id, id1);
     }
     else
     {
         string query = "UPDATE courses SET type = '" + updatedCourse.getType() + "', name = '" + updatedCourse.getName() + "', duration = " + std::to_string(updatedCourse.getDuration()) + ", course_leader = '" + updatedCourse.getCourseLeader().getEmail() + "' WHERE id = '" + id1 + "';";
 
+        writeToLog(LogTypes::INFO, "Updating course with id " + id + " with query " + query + " on " + getDatabaseInfoString());
+
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "The course may not have been updated successfully");
 
         return updated;
     }
@@ -404,6 +445,7 @@ bool DatabaseManager::add(const Student &student)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding student\n\t" + student.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -422,6 +464,10 @@ boost::optional<Student> DatabaseManager::getStudent(int id)
 {
     ResultSet *res = executeQuery("SELECT * FROM students WHERE id = " + std::to_string(id) + ";");
 
+    string sid = std::to_string(id);
+
+    writeToLog(LogTypes::INFO, "Retrieving student with id " + sid + " from " + getDatabaseInfoString());
+
     if (res->next())
     {
         string name = res->getString("name");
@@ -436,16 +482,16 @@ boost::optional<Student> DatabaseManager::getStudent(int id)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Student with id " + sid + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Student &student) {
-    return (bool)getStudent(student.getID());
-}*/
 
 vector<Student> DatabaseManager::getAllStudents()
 {
     vector<Student> students;
+
+    writeToLog(LogTypes::INFO, "Retrieving all students from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM students;");
 
@@ -462,7 +508,13 @@ vector<Student> DatabaseManager::getAllStudents()
 bool DatabaseManager::remove(const Student &student)
 {
     string id = std::to_string(student.getID());
+
+    writeToLog(LogTypes::INFO, "Removing student\n\t" + student.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = this->stmt->executeUpdate("DELETE FROM students WHERE id = " + id + ";") != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Student was not removed successfully");
 
     return removed;
 }
@@ -471,15 +523,23 @@ bool DatabaseManager::update(int id, const Student &updatedStudent)
 {
     int id1 = updatedStudent.getID();
 
+    string sid = std::to_string(id);
+
     if (id != id1)
-    {
+    {   
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + sid + " and the updated student's id: " + std::to_string(id1));
         throw KeyMismatch(std::to_string(id), std::to_string(id1));
     }
     else
     {
         string query = "UPDATE students SET name = '" + updatedStudent.getName() + "', age = " + std::to_string(updatedStudent.getAge()) + ", qca = " + std::to_string(updatedStudent.getQCA()) + ", course = '" + updatedStudent.getCourse().getID() + "' WHERE id = " + std::to_string(id1) + ";";
 
+        writeToLog(LogTypes::INFO, "Updating student with id " + sid + " with query " + query + " on " + getDatabaseInfoString());
+
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "The student may not have been updated successfully");
 
         return updated;
     }
@@ -491,6 +551,7 @@ bool DatabaseManager::add(const Module &module)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding module\n\t" + module.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -509,6 +570,8 @@ boost::optional<Module> DatabaseManager::getModule(string code)
 {
     ResultSet *res = executeQuery("SELECT * FROM modules WHERE code = '" + code + "';");
 
+    writeToLog(LogTypes::INFO, "Retrieving module with code " + code + " from " + getDatabaseInfoString());
+
     if (res->next())
     {
         string name = res->getString("name");
@@ -522,16 +585,16 @@ boost::optional<Module> DatabaseManager::getModule(string code)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Module with code " + code + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Module &module) {
-    return (bool)getModule(module.getCode());
-}*/
 
 vector<Module> DatabaseManager::getAllModules()
 {
     vector<Module> modules;
+
+    writeToLog(LogTypes::INFO, "Retrieving all modules from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT code FROM modules;");
 
@@ -549,7 +612,12 @@ bool DatabaseManager::remove(const Module &module)
 {
     string query = "DELETE FROM modules WHERE code = '" + module.getCode() + "';";
 
+    writeToLog(LogTypes::INFO, "Removing module\n\t" + module.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = this->stmt->executeUpdate(query) != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Module was not removed successfully");
 
     return removed;
 }
@@ -560,13 +628,19 @@ bool DatabaseManager::update(string code, const Module &updatedModule)
 
     if (code != code1)
     {
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + code + " and the updated course's code: " + code1);
         throw KeyMismatch(code, code1);
     }
     else
     {
         string query = "UPDATE modules SET name = '" + updatedModule.getName() + "', credits = " + std::to_string(updatedModule.getCredits()) + ", lecturer = '" + updatedModule.getLecturer().getEmail() + "' WHERE code = '" + code1 + "';";
 
+        writeToLog(LogTypes::INFO, "Updating module with code " + code + " with query " + query + " on " + getDatabaseInfoString());
+
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "The module may not have been updated successfully");
 
         return updated;
     }
@@ -574,6 +648,8 @@ bool DatabaseManager::update(string code, const Module &updatedModule)
 
 bool DatabaseManager::add(const Announcement &announcement) {
     string query = "INSERT INTO announcements (id, module, lecturer, subject, announcement) VALUES (?, ?, ?, ?, ?);";
+
+    writeToLog(LogTypes::INFO, "Adding announcement\n\t" + announcement.getDescription() + " to " + getDatabaseInfoString());
 
     PreparedStatement *prepared = this->connection->prepareStatement(query);
 
@@ -606,7 +682,12 @@ bool DatabaseManager::add(const Announcement &announcement) {
 bool DatabaseManager::remove(const Announcement &announcement) {
     string query = "DELETE FROM announcements WHERE id = " + std::to_string(announcement.getID()) + " AND module = '" + announcement.getModule().getCode() + "';";
 
+    writeToLog(LogTypes::INFO, "Removing announcement\n\t" + announcement.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = this->executeUpdate(query) != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Module was not removed successfully");
 
     return removed;
 }
@@ -618,9 +699,12 @@ bool DatabaseManager::update(int id, std::string moduleCode, const Announcement 
     string nmoduleCode = updatedAnnouncement.getModule().getCode();
 
     if (oid != nid && moduleCode != nmoduleCode) {
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + oid + "-" + moduleCode + " and the updated announcement's code: " + nid + "-" + nmoduleCode);
         throw new KeyMismatch(nid + "-" + nmoduleCode, oid + "-" + moduleCode);
     } else {
         string query = "UPDATE announcements SET lecturer = ?, subject = ?, announcement = ?, time_created = CURRENT_TIMESTAMP() WHERE id = ? AND module = ?;";
+
+        writeToLog(LogTypes::INFO, "Updating announcement with key " + oid + "-" + moduleCode + " with query " + query + " on " + getDatabaseInfoString());
 
         PreparedStatement *prepared = this->connection->prepareStatement(query);
 
@@ -634,14 +718,19 @@ bool DatabaseManager::update(int id, std::string moduleCode, const Announcement 
 
         delete prepared;
 
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "The announcement may not have been updated successfully");
+
         return updated;
     }
 }
 
-std::vector<Announcement> DatabaseManager::getAllAnnouncements() {
-    std::vector<Announcement> announcements;
+vector<Announcement> DatabaseManager::getAllAnnouncements() {
+    vector<Announcement> announcements;
 
     string query = "SELECT * FROM announcements ORDER BY time_created DESC";
+
+    writeToLog(LogTypes::INFO, "Retrieving all announcements ordered in descending time created from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -668,6 +757,7 @@ bool DatabaseManager::add(const StudentRegistration &registration)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding student registration\n\t" + registration.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -686,14 +776,23 @@ bool DatabaseManager::remove(const StudentRegistration &registration)
 {
     string query = "DELETE FROM student_registrations WHERE student = " + std::to_string(registration.getStudent().getID()) + " AND module = '" + registration.getModule().getCode() + "';";
 
+    writeToLog(LogTypes::INFO, "Removing student registration\n\t" + registration.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = this->executeUpdate(query) != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "Student registration was not removed successfully");
 
     return removed;
 }
 
 boost::optional<StudentRegistration> DatabaseManager::getStudentRegistration(const Student &student, const Module &module)
 {
-    string query = "SELECT * FROM student_registrations WHERE student = " + std::to_string(student.getID()) + " AND module = '" + module.getCode() + "';";
+    string id = std::to_string(student.getID());
+    string code = module.getCode();
+    string query = "SELECT * FROM student_registrations WHERE student = " + id + " AND module = '" + code+ "';";
+
+    writeToLog(LogTypes::INFO, "Retriving student registration for student " + id + " on module " + code + " from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -707,14 +806,18 @@ boost::optional<StudentRegistration> DatabaseManager::getStudentRegistration(con
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Student registration for student " + id + " on module " + code + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
 
-std::vector<StudentRegistration> DatabaseManager::getAllStudentRegistrations()
+vector<StudentRegistration> DatabaseManager::getAllStudentRegistrations()
 {
     vector<StudentRegistration> registrations;
 
     string query = "SELECT * FROM student_registrations;";
+
+    writeToLog(LogTypes::INFO, "Retriving all student registrations from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -733,12 +836,16 @@ bool DatabaseManager::add(const ExamAnswer &answer)
     try
     {
         string query = "INSERT INTO exam_answers (exam, question, answer) VALUES (" + std::to_string(answer.getExamID()) + ", " + std::to_string(answer.getQuestion()) + ", '" + answer.getAnswer() + "');";
+
+        writeToLog(LogTypes::INFO, "Adding Exam Answer\n\t" + answer.getDescription() + " to " + getDatabaseInfoString());
+
         this->stmt->execute(query);
 
         return true;
     }
     catch (SQLException &e)
     {
+        writeToLog(LogTypes::ERROR, "Exception thrown while adding answer: " + string(e.what()));
         throw e;
     }
 }
@@ -748,6 +855,9 @@ bool DatabaseManager::add(const ExamQuestion &question)
     try
     {
         string query = "INSERT INTO exam_questions (num, exam, question, answer_key, numberOfAnswers) VALUES (" + std::to_string(question.getNumber()) + ", " + std::to_string(question.getExamID()) + ", '" + question.getQuestion() + "', '" + question.getKey().getAnswer() + "', " + std::to_string(question.getNumberOfAnswers()) + ");";
+        
+        writeToLog(LogTypes::INFO, "Adding Exam Question\n\t" + question.getDescription() + " to " + getDatabaseInfoString());
+        
         this->stmt->execute(query);
         bool added = true; //if you reach this line, line above ran ssuccessfully
 
@@ -761,6 +871,7 @@ bool DatabaseManager::add(const ExamQuestion &question)
     }
     catch (SQLException &e)
     {
+        writeToLog(LogTypes::ERROR, "Exception thrown while adding exam question: " + string(e.what()));
         throw e;
     }
 }
@@ -774,6 +885,7 @@ bool DatabaseManager::add(const Exam &exam)
     try
     {
         this->stmt->execute(query);
+        writeToLog(LogTypes::INFO, "Adding exam\n\t" + exam.getDescription() + " to " + getDatabaseInfoString());
         bool added = true;
 
         for (const ExamQuestion &examQuestion : exam.getQuestions())
@@ -793,6 +905,7 @@ bool DatabaseManager::add(const Exam &exam)
         return false;
     }
 }
+
 //Gets the position of the minimum element in the vector
 int minPosition(int startPos, const std::vector<ExamQuestion> &vect)
 {
@@ -826,6 +939,8 @@ vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
 {
     vector<ExamQuestion> questions;
 
+    writeToLog(LogTypes::INFO, "Retriving all exam questions from exam with ID " + std::to_string(examID) + " from " + getDatabaseInfoString());
+
     ResultSet *res = executeQuery("SELECT * FROM exam_questions WHERE exam = " + std::to_string(examID) + ";");
 
     while (res->next())
@@ -836,6 +951,8 @@ vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
         int numberOfAnswers = res->getInt("numberOfAnswers");
 
         vector<ExamAnswer> answers;
+
+        writeToLog(LogTypes::INFO, "Retrieving all exam answers for question " + question + " from" + getDatabaseInfoString());
 
         ResultSet *res1 = executeQuery("SELECT * FROM exam_answers WHERE exam = " + std::to_string(examID) + " AND question = " + std::to_string(number) + ";");
 
@@ -861,6 +978,9 @@ vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
 
 boost::optional<Exam> DatabaseManager::getExam(int id)
 {
+    string sid = std::to_string(id);
+    writeToLog(LogTypes::INFO, "Retrieving exam with id " + sid + " from " + getDatabaseInfoString());
+
     ResultSet *res = executeQuery("SELECT * FROM exams WHERE id = " + std::to_string(id) + ";");
 
     if (res->next())
@@ -881,16 +1001,16 @@ boost::optional<Exam> DatabaseManager::getExam(int id)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "Exam with id " + sid + " not found in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Exam &exam) {
-    return (bool)getExam(exam.getID());
-}*/
 
 vector<Exam> DatabaseManager::getAllExams()
 {
     vector<Exam> exams;
+
+    writeToLog(LogTypes::INFO, "Retriving all exams from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM exams;");
 
@@ -912,12 +1032,16 @@ bool DatabaseManager::remove(const Exam &exam)
     string weight = std::to_string(exam.getWeightPerQuestion());
     string totalW = std::to_string(exam.getTotalWeight()); //most likely to be only one result if all attributes match
 
+    writeToLog(LogTypes::INFO, "Removing exam\n\t" + exam.getDescription() + " from " + getDatabaseInfoString());
+
     bool deleted = this->stmt->executeUpdate("DELETE FROM exams WHERE module = " + module + " AND " + "name = " + name + " AND " + "numberOfQuestions = " + numQuestions + " AND " + "weightPerQuestion = " + weight + " AND " + "totalWeight = " + totalW + ";") != 0;
+
+    if (!deleted)
+        writeToLog(LogTypes::WARNING, "Exam was not removed successfully");
 
     return deleted;
 }
 
-//this may not be correct
 bool DatabaseManager::update(const ExamAnswer &oldAnswer, const ExamAnswer &newAnswer)
 {
     string oid = std::to_string(oldAnswer.getExamID());
@@ -925,8 +1049,15 @@ bool DatabaseManager::update(const ExamAnswer &oldAnswer, const ExamAnswer &newA
 
     string query = "UPDATE exam_answers SET answer = '" + newAnswer.getAnswer() + "', question = " + std::to_string(newAnswer.getQuestion()) + " WHERE exam = " + oid + " AND question = " + std::to_string(oldAnswer.getQuestion()) + " AND answer = '" + oldAnswer.getAnswer() + "';";
 
-    return executeUpdate(query) != 0;
-}
+    writeToLog(LogTypes::INFO, "Updating exam answer with exam " + oid + " with query " + query + " on " + getDatabaseInfoString());
+
+    bool updated = executeUpdate(query) != 0;
+
+    if (!updated)
+        writeToLog(LogTypes::WARNING, "Exam Answer may not have been updated successfully");
+
+    return updated;
+}   
 
 bool DatabaseManager::update(const ExamQuestion &oldQuestion, const ExamQuestion &newQuestion)
 {
@@ -935,6 +1066,8 @@ bool DatabaseManager::update(const ExamQuestion &oldQuestion, const ExamQuestion
     bool updated = true;
 
     string query = "UPDATE exam_questions SET exam = " + nid + ", question = '" + newQuestion.getQuestion() + "', answer_key = '" + newQuestion.getKey().getAnswer() + "', numberOfAnswers = " + std::to_string(newQuestion.getNumberOfAnswers()) + " WHERE exam = " + oid + " AND num = '" + std::to_string(oldQuestion.getNumber()) + "';";
+
+    writeToLog(LogTypes::INFO, "Updating question from exam " + oid + " with query " + query + " on " + getDatabaseInfoString());
 
     //executeUpdate will always be called since updated is always true when this line is reached
     updated = updated && executeUpdate(query) != 0;
@@ -952,21 +1085,27 @@ bool DatabaseManager::update(const ExamQuestion &oldQuestion, const ExamQuestion
         updated = updated || answersUpdated;
     }
 
+    if (!updated)
+        writeToLog(LogTypes::WARNING, "Exam Question may not have been updated successfully");
+
     return updated;
 }
 
 bool DatabaseManager::update(const Exam &oldExam, const Exam &updatedExam)
 {
-    int id = oldExam.getID();
-    int id1 = updatedExam.getID();
+    string id = std::to_string(oldExam.getID());
+    string id1 = std::to_string(updatedExam.getID());
 
     if (id != id1)
     {
-        throw KeyMismatch(std::to_string(id), std::to_string(id1));
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + id + " and " + id1);
+        throw KeyMismatch(id, id1);
     }
     else
     {
-        string query = "UPDATE exams SET module = '" + updatedExam.getModule().getCode() + "', name = '" + updatedExam.getName() + "', year = " + std::to_string(updatedExam.getYear()) + ", semester = " + std::to_string(updatedExam.getSemester()) + ", numberOfQuestions = " + std::to_string(updatedExam.getNumberOfQuestions()) + ", weightPerQuestion = " + std::to_string(updatedExam.getWeightPerQuestion()) + ", totalWeight = " + std::to_string(updatedExam.getTotalWeight()) + " WHERE id = " + std::to_string(id) + ";";
+        string query = "UPDATE exams SET module = '" + updatedExam.getModule().getCode() + "', name = '" + updatedExam.getName() + "', year = " + std::to_string(updatedExam.getYear()) + ", semester = " + std::to_string(updatedExam.getSemester()) + ", numberOfQuestions = " + std::to_string(updatedExam.getNumberOfQuestions()) + ", weightPerQuestion = " + std::to_string(updatedExam.getWeightPerQuestion()) + ", totalWeight = " + std::to_string(updatedExam.getTotalWeight()) + " WHERE id = " + id + ";";
+
+        writeToLog(LogTypes::INFO, "Updating exam " + id + " with query " + query + " on " + getDatabaseInfoString());
 
         bool updated = executeUpdate(query) != 0;
 
@@ -980,6 +1119,9 @@ bool DatabaseManager::update(const Exam &oldExam, const Exam &updatedExam)
             updated = updated || update(oldQ, newQ);
         }
 
+        if (!updated) 
+            writeToLog(LogTypes::WARNING, "Exam may not have been updated successfully");
+
         return updated;
     }
 }
@@ -992,6 +1134,7 @@ bool DatabaseManager::add(const ExamGrade &examGrade)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding Exam Grade\n\t" + examGrade.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -1008,6 +1151,8 @@ bool DatabaseManager::add(const ExamGrade &examGrade)
 
 boost::optional<ExamGrade> DatabaseManager::getExamGrade(const Student &student, const Exam &exam)
 {
+    writeToLog(LogTypes::INFO, "Retrieving all exam grades for student " + std::to_string(student.getID()) + " and exam " + std::to_string(exam.getID()) + " from " + getDatabaseInfoString());
+
     ResultSet *res = executeQuery("SELECT * FROM exam_grades WHERE student = " + std::to_string(student.getID()) + " AND exam = " + std::to_string(exam.getID()) + ";");
 
     if (res->next())
@@ -1021,16 +1166,16 @@ boost::optional<ExamGrade> DatabaseManager::getExamGrade(const Student &student,
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "No exam grades for this student for the exam exists in " + getDatabaseInfoString());
+
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const ExamGrade &examGrade) {
-    return (bool)getExamGrade(examGrade.getStudent(), examGrade.getExam());
-}*/
 
 vector<ExamGrade> DatabaseManager::getAllExamGrades()
 {
     vector<ExamGrade> examGrades;
+
+    writeToLog(LogTypes::INFO, "Retriving all exam grades from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT student, exam FROM exam_grades;");
 
@@ -1049,7 +1194,13 @@ vector<ExamGrade> DatabaseManager::getAllExamGrades()
 bool DatabaseManager::remove(const ExamGrade &examGrade)
 {
     string query = "DELETE FROM exam_grades WHERE student = " + std::to_string(examGrade.getStudent().getID()) + " AND exam = " + std::to_string(examGrade.getExam().getID()) + ";";
+    
+    writeToLog(LogTypes::INFO, "Removing exam grade\n\t" + examGrade.getDescription() + " from " + getDatabaseInfoString());
+    
     bool removed = this->stmt->executeUpdate(query) != 0;
+
+    if (!removed)
+        writeToLog(LogTypes::WARNING, "The exam grade was not removed successfully from " + getDatabaseInfoString());
 
     return removed;
 }
@@ -1065,13 +1216,21 @@ bool DatabaseManager::update(const Student &student, const Exam &exam, const Exa
     {
         string key = std::to_string(sId) + "-" + std::to_string(eId);
         string key1 = std::to_string(sId1) + "-" + std::to_string(eId1);
+
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + key + " and " + key1);
+
         throw KeyMismatch(key, key1);
     }
     else
     {
         string query = "UPDATE exam_grades SET grade = " + std::to_string(updatedExamGrade.getGrade()) + " WHERE student = " + std::to_string(sId1) + " AND exam = " + std::to_string(eId1) + ";";
 
+        writeToLog(LogTypes::INFO, "Updating exam grade with query " + query + " on " + getDatabaseInfoString());
+
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "Exam Grade may not have been updated successfully");
 
         return updated;
     }
@@ -1079,10 +1238,13 @@ bool DatabaseManager::update(const Student &student, const Exam &exam, const Exa
 
 void DatabaseManager::calculateModuleGrades(std::string module, const Student &student)
 {
-    string query = "CALL calculate_grades('" + module + "', " + std::to_string(student.getID()) + ");";
+    string id = std::to_string(student.getID());
+    string query = "CALL calculate_grades('" + module + "', " + id + ");";
 
     try
     {
+        writeToLog(LogTypes::INFO, "Calling stored procedure to calculate final module grades for student " + id + " on module " + module + " on " + getDatabaseInfoString());
+
         this->stmt->execute(query);
     }
     catch (SQLException &e)
@@ -1096,9 +1258,11 @@ void DatabaseManager::calculateModuleGrades(std::string module, const Student &s
 boost::optional<ModuleGrade> DatabaseManager::getModuleGrade(const Module &module, const Student &student)
 {
     string moduleCode = "'" + module.getCode() + "'";
-    int id = student.getID();
+    string id = std::to_string(student.getID());
 
-    ResultSet *res = this->stmt->executeQuery("SELECT * FROM module_grades WHERE module = " + moduleCode + " AND student = " + std::to_string(id) + ";");
+    writeToLog(LogTypes::INFO, "Retriving module grade for student " + id + " on module " + moduleCode + " on " + getDatabaseInfoString());
+
+    ResultSet *res = this->stmt->executeQuery("SELECT * FROM module_grades WHERE module = " + moduleCode + " AND student = " + id + ";");
 
     if (res->next())
     {
@@ -1113,12 +1277,16 @@ boost::optional<ModuleGrade> DatabaseManager::getModuleGrade(const Module &modul
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "No module grade for that student found on the module on " + getDatabaseInfoString());
+
     return boost::none;
 }
 
 vector<ModuleGrade> DatabaseManager::getAllModuleGrades()
 {
     vector<ModuleGrade> moduleGrades;
+
+    writeToLog(LogTypes::INFO, "Retriving all module frades from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT module, student FROM module_grades;");
 
@@ -1140,6 +1308,7 @@ bool DatabaseManager::add(const LecturerAccount &lecturerAccount)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding lecturer account\n\t" + lecturerAccount.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -1158,6 +1327,8 @@ boost::optional<LecturerAccount> DatabaseManager::getLecturerAccount(string emai
 {
     string query = "SELECT * FROM lecturer_accounts WHERE email = '" + email + "';";
 
+    writeToLog(LogTypes::INFO, "Retrieving account for lecturer with e-mail " + email + " from " + getDatabaseInfoString());
+
     ResultSet *res = executeQuery(query);
 
     if (res->next())
@@ -1172,12 +1343,16 @@ boost::optional<LecturerAccount> DatabaseManager::getLecturerAccount(string emai
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "No account found for lecturer");
+
     return boost::none;
 }
 
 vector<LecturerAccount> DatabaseManager::getAllLecturerAccounts()
 {
     vector<LecturerAccount> accounts;
+
+    writeToLog(LogTypes::INFO, "Retrieving all lecturer accounts from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM lecturer_accounts;");
 
@@ -1193,7 +1368,12 @@ vector<LecturerAccount> DatabaseManager::getAllLecturerAccounts()
 
 bool DatabaseManager::remove(const LecturerAccount &lecturerAccount)
 {
+    writeToLog(LogTypes::INFO, "Removing lecturer account\n\t" + lecturerAccount.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = executeUpdate("DELETE FROM lecturer_accounts WHERE email = '" + lecturerAccount.getEmail() + "';") != 0;
+
+    if (!removed) 
+        writeToLog(LogTypes::ERROR, "Lecturer account not removed successfully");
 
     return removed;
 }
@@ -1205,13 +1385,19 @@ bool DatabaseManager::update(const Lecturer &lecturer, const LecturerAccount &up
 
     if (email != email1)
     {
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + email + " and " + email1);
         throw KeyMismatch(email, email1);
     }
     else
     {
         string query = "UPDATE lecturer_accounts SET pass = '" + updatedLecturerAccount.getPassword() + "' WHERE email = '" + email + "';";
 
+        writeToLog(LogTypes::INFO, "Updating lecturer account with query " + query + " on " + getDatabaseInfoString());
+
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "Lecturer account may not have been updated successfully");
 
         return updated;
     }
@@ -1223,6 +1409,7 @@ bool DatabaseManager::add(const StudentAccount &studentAccount)
 
     try
     {
+        writeToLog(LogTypes::INFO, "Adding student account\n\t" + studentAccount.getDescription() + " to " + getDatabaseInfoString());
         this->stmt->execute(query);
 
         return true;
@@ -1239,7 +1426,10 @@ bool DatabaseManager::add(const StudentAccount &studentAccount)
 
 boost::optional<StudentAccount> DatabaseManager::getStudentAccount(int id)
 {
-    string query = "SELECT * FROM student_accounts WHERE id = " + std::to_string(id) + ";";
+    string sid = std::to_string(id);
+    string query = "SELECT * FROM student_accounts WHERE id = " + sid + ";";
+
+    writeToLog(LogTypes::INFO, "Retrieving account for student with ID " + sid + " from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -1255,12 +1445,16 @@ boost::optional<StudentAccount> DatabaseManager::getStudentAccount(int id)
 
     delete res;
 
+    writeToLog(LogTypes::WARNING, "No account found for student");
+
     return boost::none;
 }
 
 vector<StudentAccount> DatabaseManager::getAllStudentAccounts()
 {
     vector<StudentAccount> accounts;
+
+    writeToLog(LogTypes::INFO, "Retrieving all student accounts from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM student_accounts;");
 
@@ -1276,25 +1470,36 @@ vector<StudentAccount> DatabaseManager::getAllStudentAccounts()
 
 bool DatabaseManager::remove(const StudentAccount &studentAccount)
 {
+    writeToLog(LogTypes::INFO, "Removing lecturer account\n\t" + studentAccount.getDescription() + " from " + getDatabaseInfoString());
+
     bool removed = executeUpdate("DELETE FROM student_accounts WHERE id = " + std::to_string(studentAccount.getStudent().getID()) + ";") != 0;
+
+    if (!removed) 
+        writeToLog(LogTypes::ERROR, "Student account not removed successfully");
 
     return removed;
 }
 
 bool DatabaseManager::update(const Student &student, const StudentAccount &updatedStudentAccount)
 {
-    int id = student.getID();
-    int id1 = updatedStudentAccount.getStudent().getID();
+    string id = std::to_string(student.getID());
+    string id1 = std::to_string(updatedStudentAccount.getStudent().getID());
 
     if (id != id1)
     {
-        throw KeyMismatch(std::to_string(id), std::to_string(id1));
+        writeToLog(LogTypes::ERROR, "Key mismatch between " + id + " and " + id1);
+        throw KeyMismatch(id, id1);
     }
     else
     {
-        string query = "UPDATE student_accounts SET pass = '" + updatedStudentAccount.getPassword() + "' WHERE id = " + std::to_string(id1) + ";";
+        string query = "UPDATE student_accounts SET pass = '" + updatedStudentAccount.getPassword() + "' WHERE id = " + id1 + ";";
+
+         writeToLog(LogTypes::INFO, "Updating student account with query " + query + " on " + getDatabaseInfoString());
 
         bool updated = executeUpdate(query) != 0;
+
+        if (!updated)
+            writeToLog(LogTypes::WARNING, "Student account may not have been updated successfully");
 
         return updated;
     }
@@ -1304,6 +1509,7 @@ void DatabaseManager::execute(string query)
 {
     try
     {
+        writeToLog(LogTypes::INFO, "Executing " + query);
         this->stmt->execute(query);
     }
     catch (SQLException &e)
@@ -1316,14 +1522,34 @@ void DatabaseManager::execute(string query)
 
 ResultSet *DatabaseManager::executeQuery(string query)
 {
-    ResultSet *res = this->stmt->executeQuery(query);
+    try {
+        writeToLog(LogTypes::INFO, "Executing Query " + query);
+        ResultSet *res = this->stmt->executeQuery(query);
 
-    return res;
+        return res;
+    } catch (SQLException &e) {
+        const char *error = e.what();
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+
+        return nullptr;
+    }
 }
 
 int DatabaseManager::executeUpdate(string query)
 {
-    return this->stmt->executeUpdate(query);
+    try {
+        writeToLog(LogTypes::INFO, "Executing update " + query);
+        int updated = this->stmt->executeUpdate(query);
+
+        return updated;
+    } catch (SQLException &e) {
+        const char *error = e.what();
+        string message = formatQueryError(query, error);
+        writeToLog(LogTypes::ERROR, message);
+
+        return 0;
+    }
 }
 
 void DatabaseManager::clearTable(Tables table)

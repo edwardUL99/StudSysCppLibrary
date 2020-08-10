@@ -4,13 +4,14 @@
 #include <mysql/jdbc.h>
 using namespace sql;
 
-class string;
+#include <string>
 #include <vector>
 #include <boost/optional.hpp>
 #include <boost/any.hpp>
 #include "Tables.h"
 #include "DatabaseItem.h"
 #include "Warning.h"
+#include "Logging.h"
 #include <map>
 
 #define DB "student_sys"
@@ -53,7 +54,8 @@ private:
     void clearTable(Tables table);
     void initialiseLogger();
     std::string formatQueryError(std::string query, std::string error);
-    void writeToLog(logging::LogTypes type, string message);
+    std::string getDatabaseInfoString();
+    void writeToLog(logging::LogTypes type, std::string message);
     std::vector<ExamQuestion> getAllExamQuestions(int examID);
     void setLastExamID();
     void setLastAnnouncementID();
@@ -149,16 +151,6 @@ public:
 
     //Procedure to calculate module grades for the specified module and student
     void calculateModuleGrades(std::string module, const Student &student);
-
-    //Overloaded contains methods to check if the database contains the entity
-    /*bool contains(const Lecturer &lecturer);
-    bool contains(const Course &course);
-    bool contains(const Student &student);
-    bool contains(const Module &module);
-    bool contains(const Exam &exam);
-    bool contains(const ExamGrade &examGrade);
-    bool contains(const LecturerAccount &lecturerAccount);
-    bool contains(const StudentAccount &studentAccount);*/
     bool contains(const DatabaseItem &item);
 
     //Various execute methods
