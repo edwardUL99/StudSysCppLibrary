@@ -7,7 +7,7 @@
 
 #include <string>
 
-class StudentAccount: public DatabaseItem, public Account {
+class StudentAccount: public Account {
     private:
         Student student;
 

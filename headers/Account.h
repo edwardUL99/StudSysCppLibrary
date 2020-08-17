@@ -2,8 +2,9 @@
 #define ACCOUNT_H
 
 #include <string>
+#include "DatabaseItem.h"
 
-class Account {
+class Account : public DatabaseItem {
     protected:
         std::string name;
         std::string email;
