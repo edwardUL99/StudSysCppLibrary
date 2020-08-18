@@ -324,10 +324,6 @@ boost::optional<Course> DatabaseManager::getCourse(string id)
     return boost::none;
 }
 
-/*bool DatabaseManager::contains(const Course &course) {
-    return (bool)getCourse(course.getID());
-}*/
-
 vector<Course> DatabaseManager::getAllCourses()
 {
     vector<Course> courses;
@@ -411,10 +407,6 @@ boost::optional<Student> DatabaseManager::getStudent(int id)
     return boost::none;
 }
 
-/*bool DatabaseManager::contains(const Student &student) {
-    return (bool)getStudent(student.getID());
-}*/
-
 vector<Student> DatabaseManager::getAllStudents()
 {
     vector<Student> students;
@@ -496,10 +488,6 @@ boost::optional<Module> DatabaseManager::getModule(string code)
 
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const Module &module) {
-    return (bool)getModule(module.getCode());
-}*/
 
 vector<Module> DatabaseManager::getAllModules()
 {
@@ -737,8 +725,6 @@ bool DatabaseManager::add(const ExamQuestion &question)
     }
 }
 
-//CHECK SCHEMA TO SEE IF THE TABLES WORK I.E CLEAR EVERY TABLE AND REIMPORT TO CHECK FOR SYNTAX ERRORS
-//this may not work, you'll have to edit getExam too but remove may be fine because you have cascades
 bool DatabaseManager::add(const Exam &exam)
 {
     string query = "INSERT INTO exams (id, module, name, year, semester, numberOfQuestions, weightPerQuestion, totalWeight) VALUES (" + std::to_string(exam.getID()) + ", '" + exam.getModule().getCode() + "', '" + exam.getName() + "', " + std::to_string(exam.getYear()) + ", " + std::to_string(exam.getSemester()) + ", " + std::to_string(exam.getNumberOfQuestions()) + ", " + std::to_string(exam.getWeightPerQuestion()) + ", " + std::to_string(exam.getTotalWeight()) + ");";
@@ -765,6 +751,7 @@ bool DatabaseManager::add(const Exam &exam)
         return false;
     }
 }
+
 //Gets the position of the minimum element in the vector
 int minPosition(int startPos, const std::vector<ExamQuestion> &vect)
 {

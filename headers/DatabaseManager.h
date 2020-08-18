@@ -62,9 +62,6 @@ private:
     bool update(const ExamQuestion &oldQuestion, const ExamQuestion &newQuestion);
 
 public:
-    //with remove methods figure out what to do if a foreign key constraint prevents it
-    //add methods to perform updates
-
     /**
      * This just constructs a DatabaseManager object
      * It does NOT establish a connection to the database.
@@ -77,7 +74,6 @@ public:
      * Connects the manager to the actual database server specified by the database parameters or left to defaults
      * It is undefined behaviour if any of this class' operations are called without this being called once before
      * In fact, it will be guaranteed to crash if it's not called
-     * 
      */
     void connectToDatabase(std::string database = DB, std::string user = DB_USER, std::string pass = DB_PASS, std::string host = DB_HOST);
 
@@ -90,7 +86,7 @@ public:
     bool add(const StudentRegistration &registration);
     bool add(const Exam &exam);
     bool add(const ExamGrade &examGrade);
-    bool add(const LecturerAccount &lecturerAccount); //const and reference here doesnt seem to work with inheritance because it caused bad_alloc as debigger said memory not accessible for e.g department
+    bool add(const LecturerAccount &lecturerAccount);
     bool add(const StudentAccount &studentAccount);
 
     //Overloaded remove methods to remove different entities from the database
@@ -100,7 +96,7 @@ public:
     bool remove(const Module &module);
     bool remove(const Announcement &announcement);
     bool remove(const StudentRegistration &registration);
-    bool remove(const Exam &exam); //can't have exam as const has in the removal process, in order to find the exam, the id for that exam needs to be retrieved from the database
+    bool remove(const Exam &exam); 
     bool remove(const ExamGrade &examGrade);
     bool remove(const LecturerAccount &lecturerAccount);
     bool remove(const StudentAccount &studentAccount);
@@ -111,7 +107,6 @@ public:
     bool update(std::string id, const Course &updatedCourse);
     bool update(std::string code, const Module &updatedModule);
     bool update(int id, std::string moduleCode, const Announcement &updatedAnnouncement);
-    //must ensure that each question of the exam, it's answer count is >= what it was before and same with question counts
     bool update(const Exam &oldExam, const Exam &updatedExam);
     bool update(const Student &student, const Exam &exam, const ExamGrade &updatedExamGrade);
     bool update(const Lecturer &lecturer, const LecturerAccount &updatedLecturerAccount);
@@ -122,7 +117,6 @@ public:
     boost::optional<Course> getCourse(std::string id);
     boost::optional<Student> getStudent(int id);
     boost::optional<Module> getModule(std::string code);
-    //This method is trivial, if you have the student and registration for paramter, you already have a StudentRegistration. A possible use is checking if the student is registered, ie if it has_value() they are registered
     boost::optional<StudentRegistration> getStudentRegistration(const Student &student, const Module &module);
     boost::optional<Exam> getExam(int id);
     boost::optional<ExamGrade> getExamGrade(const Student &student, const Exam &exam);
@@ -146,15 +140,10 @@ public:
     //Procedure to calculate module grades for the specified module and student
     void calculateModuleGrades(std::string module, const Student &student);
 
-    //Overloaded contains methods to check if the database contains the entity
-    /*bool contains(const Lecturer &lecturer);
-    bool contains(const Course &course);
-    bool contains(const Student &student);
-    bool contains(const Module &module);
-    bool contains(const Exam &exam);
-    bool contains(const ExamGrade &examGrade);
-    bool contains(const LecturerAccount &lecturerAccount);
-    bool contains(const StudentAccount &studentAccount);*/
+    /**
+     * Checks if the database contains the specified item
+     * @param item A reference to an item that's in the database
+     */
     bool contains(const DatabaseItem &item);
 
     //Various execute methods
