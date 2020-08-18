@@ -168,10 +168,6 @@ boost::optional<Lecturer> DatabaseManager::getLecturer(string email)
     return boost::none;
 }
 
-/*bool DatabaseManager::contains(const Lecturer &lecturer) {
-    return (bool)getLecturer(lecturer.getID());
-}*/
-
 bool DatabaseManager::contains(const DatabaseItem &item)
 {
     Tables table = item.getTable();
@@ -843,10 +839,6 @@ boost::optional<Exam> DatabaseManager::getExam(int id)
     return boost::none;
 }
 
-/*bool DatabaseManager::contains(const Exam &exam) {
-    return (bool)getExam(exam.getID());
-}*/
-
 vector<Exam> DatabaseManager::getAllExams()
 {
     vector<Exam> exams;
@@ -876,7 +868,6 @@ bool DatabaseManager::remove(const Exam &exam)
     return deleted;
 }
 
-//this may not be correct
 bool DatabaseManager::update(const ExamAnswer &oldAnswer, const ExamAnswer &newAnswer)
 {
     string oid = std::to_string(oldAnswer.getExamID());
@@ -891,12 +882,8 @@ bool DatabaseManager::update(const ExamQuestion &oldQuestion, const ExamQuestion
 {
     string oid = std::to_string(oldQuestion.getExamID());
     string nid = std::to_string(newQuestion.getExamID());
-    bool updated = true;
-
     string query = "UPDATE exam_questions SET exam = " + nid + ", question = '" + newQuestion.getQuestion() + "', answer_key = '" + newQuestion.getKey().getAnswer() + "', numberOfAnswers = " + std::to_string(newQuestion.getNumberOfAnswers()) + " WHERE exam = " + oid + " AND num = '" + std::to_string(oldQuestion.getNumber()) + "';";
-
-    //executeUpdate will always be called since updated is always true when this line is reached
-    updated = updated && executeUpdate(query) != 0;
+    bool updated = executeUpdate(query) != 0;
 
     vector<ExamAnswer> oldAnswers = oldQuestion.getPossibleAnswers();
     vector<ExamAnswer> newAnswers = newQuestion.getPossibleAnswers();
@@ -982,10 +969,6 @@ boost::optional<ExamGrade> DatabaseManager::getExamGrade(const Student &student,
 
     return boost::none;
 }
-
-/*bool DatabaseManager::contains(const ExamGrade &examGrade) {
-    return (bool)getExamGrade(examGrade.getStudent(), examGrade.getExam());
-}*/
 
 vector<ExamGrade> DatabaseManager::getAllExamGrades()
 {
@@ -1353,12 +1336,6 @@ void DatabaseManager::writeWarningsToLog()
 }
 
 DatabaseManager &DatabaseManager::operator=(const DatabaseManager &manager) {
-    /*this->driver = get_driver_instance();
-    this->connection = this->driver->connect(manager.host, manager.user, manager.pass);
-    this->connection->setSchema(manager.database);
-    this->stmt = this->connection->createStatement();
-*/
-
     this->host = manager.host;
     this->user = manager.user;
     this->pass = manager.pass;

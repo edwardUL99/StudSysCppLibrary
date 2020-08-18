@@ -269,8 +269,6 @@ std::vector<Student> StudentSystem::getStudentsRegisteredOnModule(const Module &
         }
     }
 
-    //string query = "SELECT student FROM student_registrations JOIN modules ON module = code WHERE module = '" + module.getCode() + "';"; maybe use this and result set instead and then getStudent (from id)
-
     return students;
 }
 
@@ -314,19 +312,6 @@ std::vector<Exam> StudentSystem::retrieveExamsByModule(const Module &module) {
     }
 
     return exams;
-    
-    /* Or you could do as follows:
-    string query = "SELECT id FROM exams LEFT JOIN modules ON module = code WHERE module = '" + module.getCode() + "';";
-    ResultSet *res = this->database.executeQuery(query);
-
-    while (res->next()) {
-        exams.push_back(this->getExam(res->getInt("id")));
-    }
-
-    delete res;
-
-    return exams;
-    */
 }
 
 bool StudentSystem::examTaken(const Exam &exam) {
