@@ -29,7 +29,6 @@ namespace logging
             std::map<LogFile, std::ofstream> logWriters; //maps each log file to its corresponding file writer
             void convertVectorsToMap(const std::vector<std::string> &logFileNames, const std::vector<std::string> &logContents); //takes the t2 vectors, constructs LogFile objects out of them and then calls initialise maps
             void initialiseMaps(const std::map<std::string, LogFile> &logFiles); //initialises the maps for this logger
-            void refreshLogFile(const std::string &fileName, const std::string &newContents);
 
         public:
             /**
@@ -48,6 +47,12 @@ namespace logging
              *      It is undefined behaviour if logContents size is not 0 but not equal to logFileNames' size
              */
             Logger(std::vector<std::string> logFileNames, std::vector<std::string> logContents = std::vector<std::string>());
+            /**
+             * Checks if this logger contains the LogFile identified by the name
+             * @param fileName the name of the log file
+             * @return true if the logger contains it
+             */ 
+            bool containsLogFile(const std::string &fileName) const;
             /**
              * Adds the specified log file to this LOgger object
              * @param logFile the log file to add
