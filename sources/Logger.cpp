@@ -26,7 +26,7 @@ void Logger::convertVectorsToMap(const vector<string> &logFileNames, const vecto
         string fileName = logFileNames[i];
         string contents = addEmptyContents ? "":logContents[i];
         LogFile file(fileName, contents);
-        logFiles.insert(std::pair<string, LogFile>(fileName, contents));
+        logFiles.insert(std::pair<string, LogFile>(fileName, LogFile(fileName, contents)));
     }
 
     initialiseMaps(logFiles);
@@ -36,6 +36,7 @@ void Logger::initialiseMaps(const map<string, LogFile> &logFiles) {
     this->logFiles = logFiles;
     for (map<string, LogFile>::const_iterator it = logFiles.begin(); it != logFiles.end(); it++) {
         logWriters.insert(std::pair<LogFile, ofstream>(it->second, ofstream(it->first)));
+        setLogFileContents(it->first, it->second.getContent());
     }
 }
 
@@ -43,6 +44,19 @@ void Logger::addLogFile(LogFile logFile) {
     string fileName = logFile.getFileName();
     logFiles.insert(std::pair<string, LogFile>(fileName, logFile));
     logWriters.insert(std::pair<LogFile, ofstream>(logFile, ofstream(fileName)));
+}
+
+void Logger::refreshLogFile(const string &fileName, const string &newContents) {
+    map<string, LogFile>::iterator filesIterator = logFiles.find(fileName);
+
+    if (filesIterator != logFiles.end()) {
+        LogFile file = filesIterator->second;
+
+        logFiles.erase(filesIterator);
+
+        file.setContent(newContents);
+        logFiles[fileName] = file;
+    }
 }
 
 void Logger::removeLogFile(const string &fileName) {
@@ -76,10 +90,10 @@ bool Logger::setLogFileContents(const std::string &fileName, const std::string &
         LogFile file = fileOptional.get();
         file.setContent(contents);
         
-        removeLogFile(fileName);
-        logWriters.insert(std::pair<LogFile, ofstream>(file, ofstream(fileName)));
-
+        refreshLogFile(fileName, contents);
         logWriters.at(file) << contents;
+
+        return true;
     }
 
     return false;
@@ -92,10 +106,10 @@ bool Logger::appendToLogFile(const std::string &fileName, const std::string &lin
         LogFile file = fileOptional.get();
         string returnedLine = file.appendToFile(line, newLine);
         
-        removeLogFile(fileName);
-        logWriters.insert(std::pair<LogFile, ofstream>(file, ofstream(fileName)));
-
+        refreshLogFile(fileName, file.getContent());
         logWriters.at(file) << returnedLine;
+        
+        return true;
     }
 
     return false;

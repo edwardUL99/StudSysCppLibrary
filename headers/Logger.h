@@ -29,6 +29,7 @@ namespace logging
             std::map<LogFile, std::ofstream> logWriters; //maps each log file to its corresponding file writer
             void convertVectorsToMap(const std::vector<std::string> &logFileNames, const std::vector<std::string> &logContents); //takes the t2 vectors, constructs LogFile objects out of them and then calls initialise maps
             void initialiseMaps(const std::map<std::string, LogFile> &logFiles); //initialises the maps for this logger
+            void refreshLogFile(const std::string &fileName, const std::string &newContents);
 
         public:
             /**
