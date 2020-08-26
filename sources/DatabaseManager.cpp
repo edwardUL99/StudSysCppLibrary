@@ -1,5 +1,4 @@
 #include "headers/DatabaseManager.h"
-#include "headers/Warning.h"
 #include "headers/Student.h"
 #include "headers/Lecturer.h"
 #include "headers/Course.h"
@@ -48,13 +47,18 @@ const map<Tables, string> DatabaseManager::tableNames = {
 DatabaseManager::DatabaseManager(bool logging)
 {
     this->logging = logging;
-    this->logFileName = string(getenv("STUD_LOGS")) + "/studsys.log";
-    if (this->logFileName.size() == 0)
-        logging = false;
-    initialiseLogger();
+    char* env = getenv("STUD_LOGS");
+    if (env == NULL) {
+        this->logging = false;
+    } else {
+        this->logFileName = string(env) + "/studsys.log";
+    }
+
     this->connection = NULL;
     this->driver = NULL;
     this->stmt = NULL;
+
+    initialiseLogger();
 }
 
 DatabaseManager::DatabaseManager(const DatabaseManager &databaseManager) {
@@ -153,7 +157,7 @@ void DatabaseManager::connectToDatabase(string database, string user, string pas
 
     try {
         this->driver = get_driver_instance();
-        delete this->connection;
+        if (this->connection == NULL) this->connection;
         this->connection = this->driver->connect(this->host, this->user, this->pass);
         this->connection->setSchema(this->database);
         delete this->stmt;

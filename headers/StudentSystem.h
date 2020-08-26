@@ -17,9 +17,6 @@
 #include <vector>
 #include <string>
 
-//todo see db manager h file top about remove methods and foreign key checks
-//will need a table to save what modules students are taking etc
-
 class StudentSystem {
     private:
         DatabaseManager database;
