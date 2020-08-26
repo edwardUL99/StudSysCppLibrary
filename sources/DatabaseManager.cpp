@@ -48,7 +48,7 @@ const map<Tables, string> DatabaseManager::tableNames = {
 DatabaseManager::DatabaseManager(bool logging)
 {
     this->logging = logging;
-    this->logFileName = string(getenv("STUDSYS_LOGS")) + "/studsys.log";
+    this->logFileName = string(getenv("STUD_LOGS")) + "/studsys.log";
     if (this->logFileName.size() == 0)
         logging = false;
     initialiseLogger();
