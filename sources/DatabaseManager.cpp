@@ -48,7 +48,7 @@ const map<Tables, string> DatabaseManager::tableNames = {
 DatabaseManager::DatabaseManager(bool logging)
 {
     this->logging = logging;
-    this->logFileName = getenv("STUDSYS_LOG_DIR");
+    this->logFileName = string(getenv("STUDSYS_LOGS")) + "/studsys.log";
     if (this->logFileName.size() == 0)
         logging = false;
     initialiseLogger();
@@ -79,7 +79,9 @@ DatabaseManager::~DatabaseManager()
 }
 
 void DatabaseManager::initialiseLogger() {
-    if (logging) {
+    static bool initialised = false;
+    if (logging && !initialised) {
+        initialised = true;
         logging::LogFile logFile;
         logFile.setFileName(this->logFileName);
         logging::logger.addLogFile(logFile);
@@ -101,7 +103,7 @@ string DatabaseManager::getDatabaseInfoString() {
 void DatabaseManager::writeToLog(LogTypes type, string message) {
     if (logging) {
         time_t ttime = time(0);
-        logging::logger.appendToLogFile(logFileName, type, message + " at " + ctime(&ttime), true);
+        logging::logger.appendToLogFile(logFileName, type, "DatabaseManager: " + message + " at " + ctime(&ttime), true);
     }
 }
 

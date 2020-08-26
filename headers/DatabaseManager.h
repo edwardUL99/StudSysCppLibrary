@@ -68,9 +68,6 @@ private:
     bool update(const ExamQuestion &oldQuestion, const ExamQuestion &newQuestion);
 
 public:
-    //with remove methods figure out what to do if a foreign key constraint prevents it
-    //add methods to perform updates
-
     /**
      * This just constructs a DatabaseManager object
      * It does NOT establish a connection to the database.
@@ -162,6 +159,7 @@ public:
     void clearDatabase();
 
     DatabaseManager &operator=(const DatabaseManager &manager);
+    friend class StudentSystem;
 };
 
 #endif // DATABASE_MANAGER_H
