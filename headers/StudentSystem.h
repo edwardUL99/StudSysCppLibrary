@@ -88,6 +88,17 @@ class StudentSystem {
         bool removeExamGrade(const ExamGrade &examGrade);
         bool updateExamGrade(const Student &student, const Exam &exam, const ExamGrade &updatedExamGrade);
         ModuleGrade getModuleGrade(const Module &module, const Student &student);
+        /**
+         * Calculates the individual module grade for the specified student on the specified module
+         * @param module the code of the module the grade is for
+         * @param student the student to calculate the grade for
+         */
+        void calculateModuleGrade(std::string module, const Student &student);
+        /**
+         * Calculates all Module grades for every student in the specified module
+         * @param module the code of the module to calculate grades for
+         */
+        void calculateAllModuleGradesForModule(std::string module);
         bool addAccount(LecturerAccount lecturerAccount);
         LecturerAccount getLecturerAccount(std::string email);
         bool removeAccount(const LecturerAccount &lecturerAccount);

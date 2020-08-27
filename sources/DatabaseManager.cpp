@@ -825,7 +825,7 @@ vector<StudentRegistration> DatabaseManager::getAllStudentRegistrations()
 
     string query = "SELECT * FROM student_registrations;";
 
-    writeToLog(LogTypes::INFO, "Retriving all student registrations from " + getDatabaseInfoString());
+    writeToLog(LogTypes::INFO, "Retrieving all student registrations from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -958,7 +958,7 @@ vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
 
         vector<ExamAnswer> answers;
 
-        writeToLog(LogTypes::INFO, "Retrieving all exam answers for question " + question + " from" + getDatabaseInfoString());
+        writeToLog(LogTypes::INFO, "Retrieving all exam answers for question " + question + " from " + getDatabaseInfoString());
 
         ResultSet *res1 = executeQuery("SELECT * FROM exam_answers WHERE exam = " + std::to_string(examID) + " AND question = " + std::to_string(number) + ";");
 
@@ -1016,7 +1016,7 @@ vector<Exam> DatabaseManager::getAllExams()
 {
     vector<Exam> exams;
 
-    writeToLog(LogTypes::INFO, "Retriving all exams from " + getDatabaseInfoString());
+    writeToLog(LogTypes::INFO, "Retrieving all exams from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery("SELECT id FROM exams;");
 

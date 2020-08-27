@@ -468,6 +468,19 @@ ModuleGrade StudentSystem::getModuleGrade(const Module &module, const Student &s
     }
 }
 
+void StudentSystem::calculateModuleGrade(string module, const Student &student) {
+    logInfo("Calculating Module Grade for Student " + student.getDescription() + " on Module " + module);
+    this->database.calculateModuleGrades(module, student);
+}
+
+void StudentSystem::calculateAllModuleGradesForModule(string module) {
+    logInfo("Calculating all Module Grades for every student in Module " + module);
+
+    for (const Student &student : getStudentsRegisteredOnModule(getModule(module))) {
+        calculateModuleGrade(module, student);
+    }
+}
+
 bool StudentSystem::addAccount(LecturerAccount lecturerAccount) {
     logInfo("Request to add Lecturer Account " + lecturerAccount.getDescription() + " to system");
     if (this->database.contains(lecturerAccount)) {
@@ -519,7 +532,7 @@ bool StudentSystem::addAccount(const StudentAccount &studentAccount) {
 }
 
 StudentAccount StudentSystem::getStudentAccount(int id) {
-    logInfo("Retrieving Lecturer Account matching ID " + std::to_string(id));
+    logInfo("Retrieving Student Account matching ID " + std::to_string(id));
     boost::optional<StudentAccount> studentAccount = this->database.getStudentAccount(id);
 
     if (studentAccount) {
