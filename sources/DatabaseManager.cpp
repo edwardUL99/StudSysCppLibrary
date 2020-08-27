@@ -157,7 +157,7 @@ void DatabaseManager::connectToDatabase(string database, string user, string pas
 
     try {
         this->driver = get_driver_instance();
-        if (this->connection == NULL) this->connection;
+        delete this->connection;
         this->connection = this->driver->connect(this->host, this->user, this->pass);
         this->connection->setSchema(this->database);
         delete this->stmt;

@@ -4,6 +4,9 @@
 #include <string>
 #include <iostream>
 
+/**
+ * This class is DEPRECATED, it will be removed in a future release
+ */
 class Warning
 {
 private:

@@ -487,7 +487,7 @@ LecturerAccount StudentSystem::getLecturerAccount(string email) {
         logInfo("Lecturer Account found");
         return lecturerAccount.get();
     } else {
-        logInfo("Lecturer Account not found in system");
+        logError("Lecturer Account not found in system");
         throw NotFoundException("Lecturer Account identified by lecturer " + email);
     }
 }
@@ -526,7 +526,7 @@ StudentAccount StudentSystem::getStudentAccount(int id) {
         logInfo("Student Account found");
         return studentAccount.get();
     } else {
-        logInfo("Student Account not found in system");
+        logError("Student Account not found in system");
         throw NotFoundException("Student Account identified by student " + std::to_string(id));
     }
 }

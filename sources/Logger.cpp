@@ -94,7 +94,9 @@ bool Logger::setLogFileContents(const std::string &fileName, const std::string &
         LogFile &logFile = logFiles.at(fileName);
         logFile.setContent(contents);
 
-        logWriters.at(logFile) << contents;
+        ofstream &writer = logWriters.at(logFile);
+        writer << contents;
+        writer.flush();
 
         return true;
     }
@@ -109,7 +111,10 @@ bool Logger::appendToLogFile(const std::string &fileName, const std::string &lin
         LogFile &logFile = logFiles.at(fileName);
         string returnedLine = logFile.appendToFile(line, newLine);
 
-        logWriters.at(logFile) << returnedLine;
+        ofstream &writer = logWriters.at(logFile);
+        writer << returnedLine;
+        writer.flush();
+        
 
         return true;
     }
