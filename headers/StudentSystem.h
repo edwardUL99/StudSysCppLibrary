@@ -20,6 +20,9 @@
 class StudentSystem {
     private:
         DatabaseManager database;
+        void logInfo(std::string message);
+        void logError(std::string message);
+        void logWarning(std::string warning);
 
     public:
         /**
@@ -49,7 +52,7 @@ class StudentSystem {
         bool addModule(const Module &module);
         Module getModule(std::string code);
         bool removeModule(const Module &module);
-        bool updateModule(std::string code, const Module &updaredModule);
+        bool updateModule(std::string code, const Module &updatedModule);
         std::vector<Module> getModules();
 
         bool addAnnouncement(const Announcement &announcement);
