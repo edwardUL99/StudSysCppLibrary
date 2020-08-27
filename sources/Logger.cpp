@@ -41,7 +41,7 @@ void Logger::initialiseMaps(const map<string, LogFile> &logFiles)
     this->logFiles = logFiles;
     for (map<string, LogFile>::const_iterator it = logFiles.begin(); it != logFiles.end(); it++)
     {
-        logWriters.insert(std::pair<LogFile, ofstream>(it->second, ofstream(it->first)));
+        logWriters.insert(std::pair<LogFile, ofstream>(it->second, ofstream(it->first, std::ios::app)));
         setLogFileContents(it->first, it->second.getContent());
     }
 }
@@ -50,7 +50,7 @@ void Logger::addLogFile(LogFile logFile)
 {
     string fileName = logFile.getFileName();
     logFiles.insert(std::pair<string, LogFile>(fileName, logFile));
-    logWriters.insert(std::pair<LogFile, ofstream>(logFile, ofstream(fileName)));
+    logWriters.insert(std::pair<LogFile, ofstream>(logFile, ofstream(fileName, std::ios::app)));
 }
 
 void Logger::removeLogFile(const string &fileName)
