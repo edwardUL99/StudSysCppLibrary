@@ -1,13 +1,12 @@
 #ifndef LECTURER_ACCOUNT_H
 #define LECTURER_ACCOUNT_H
 
-#include "DatabaseItem.h"
 #include "Account.h"
 #include "Lecturer.h"
 
 #include <string>
 
-class LecturerAccount : public DatabaseItem, public Account {
+class LecturerAccount : public Account {
     private:
         Lecturer lecturer;
 

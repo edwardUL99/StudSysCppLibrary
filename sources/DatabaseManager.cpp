@@ -884,8 +884,6 @@ bool DatabaseManager::add(const ExamQuestion &question)
     }
 }
 
-//CHECK SCHEMA TO SEE IF THE TABLES WORK I.E CLEAR EVERY TABLE AND REIMPORT TO CHECK FOR SYNTAX ERRORS
-//this may not work, you'll have to edit getExam too but remove may be fine because you have cascades
 bool DatabaseManager::add(const Exam &exam)
 {
     string query = "INSERT INTO exams (id, module, name, year, semester, numberOfQuestions, weightPerQuestion, totalWeight) VALUES (" + std::to_string(exam.getID()) + ", '" + exam.getModule().getCode() + "', '" + exam.getName() + "', " + std::to_string(exam.getYear()) + ", " + std::to_string(exam.getSemester()) + ", " + std::to_string(exam.getNumberOfQuestions()) + ", " + std::to_string(exam.getWeightPerQuestion()) + ", " + std::to_string(exam.getTotalWeight()) + ");";
@@ -1071,14 +1069,10 @@ bool DatabaseManager::update(const ExamQuestion &oldQuestion, const ExamQuestion
 {
     string oid = std::to_string(oldQuestion.getExamID());
     string nid = std::to_string(newQuestion.getExamID());
-    bool updated = true;
-
     string query = "UPDATE exam_questions SET exam = " + nid + ", question = '" + newQuestion.getQuestion() + "', answer_key = '" + newQuestion.getKey().getAnswer() + "', numberOfAnswers = " + std::to_string(newQuestion.getNumberOfAnswers()) + " WHERE exam = " + oid + " AND num = '" + std::to_string(oldQuestion.getNumber()) + "';";
 
     writeToLog(LogTypes::INFO, "Updating question from exam " + oid + " with query " + query + " on " + getDatabaseInfoString());
-
-    //executeUpdate will always be called since updated is always true when this line is reached
-    updated = updated && executeUpdate(query) != 0;
+    bool updated = executeUpdate(query) != 0;
 
     vector<ExamAnswer> oldAnswers = oldQuestion.getPossibleAnswers();
     vector<ExamAnswer> newAnswers = newQuestion.getPossibleAnswers();

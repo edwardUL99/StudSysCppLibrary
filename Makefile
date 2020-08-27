@@ -8,4 +8,4 @@ libstudsys.so: $(SOURCES)
 	$(CXX) $(CXXFLAGS) $(SOURCES) -lmysqlcppconn -o libstudsys.so
 
 clean:
-	$(RM) $(OBJECTS)
+	$(RM) libstudsys.so
