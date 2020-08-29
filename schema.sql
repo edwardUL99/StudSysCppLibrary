@@ -20,12 +20,10 @@ CREATE TABLE IF NOT EXISTS courses (
 	course_leader VARCHAR(100),
 	PRIMARY KEY (id),
 	FOREIGN KEY (course_leader) REFERENCES lecturers(email)
-		ON DELETE RESTRICT
+		ON DELETE SET NULL
 		ON UPDATE CASCADE
 );
 
-
-/*may not be in 3NF, see comment in issue #20 on GitHub*/
 CREATE TABLE IF NOT EXISTS students (
 	id INTEGER NOT NULL,
 	name VARCHAR(100) NOT NULL,
@@ -34,7 +32,7 @@ CREATE TABLE IF NOT EXISTS students (
 	course CHAR(5),
 	PRIMARY KEY (id),
 	FOREIGN KEY (course) REFERENCES courses(id)
-		ON DELETE RESTRICT
+		ON DELETE SET NULL
 		ON UPDATE CASCADE
 );
 
@@ -45,7 +43,7 @@ CREATE TABLE IF NOT EXISTS modules (
 	lecturer VARCHAR(100),
 	PRIMARY KEY (code),
 	FOREIGN KEY (lecturer) REFERENCES lecturers(email)
-		ON DELETE RESTRICT
+		ON DELETE SET NULL
 		ON UPDATE CASCADE
 );
 
@@ -65,7 +63,6 @@ CREATE TABLE IF NOT EXISTS announcements (
 		ON UPDATE CASCADE  
 );
 
-/*this is only a draft table*/
 CREATE TABLE IF NOT EXISTS student_registrations (
 	student INTEGER,
 	module CHAR(6),
@@ -178,5 +175,3 @@ CREATE TABLE IF NOT EXISTS student_logins (
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
 );
-
-/*other tables below*/

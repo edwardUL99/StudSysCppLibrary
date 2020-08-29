@@ -25,6 +25,6 @@ public:
         os << w.toString();
         return os;
     }
-};
+} __attribute__((deprecated));
 
 #endif // WARNING_H
