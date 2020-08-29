@@ -27,3 +27,14 @@ For the sql files, when setting up the database, you need to set up a user that 
        7. Then type FLUSH PRIVILEGES; and then exit
        8. Ensure bind-address in mysql config is set to 0.0.0.0 on the database server machine
    The MySQL server is now set-up and ready to use with the system
+
+# Logging
+To enable logging, you need to set the environment variable STUD_LOGS with the location of where you want the log file saved.
+
+On linux you can do this with:
+export STUD_LOGS=<path_to_store_log>
+
+The log is saved in this path as studsys.log
+
+To disable it, unset the environment variable, on Linux:
+unset STUD_LOGS
