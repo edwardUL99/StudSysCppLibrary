@@ -10,6 +10,7 @@
 namespace logging
 {
     class LogFile;
+    class LogWriter;
 
     /**
      * An enum class to represent the log type to write
@@ -25,8 +26,7 @@ namespace logging
      */
     class Logger {
         private:
-            std::map<std::string, LogFile> logFiles; //the file name is mapped to its equivalent log file
-            std::map<LogFile, std::ofstream> logWriters; //maps each log file to its corresponding file writer
+            std::map<std::string, LogWriter> logFiles; //the file name is mapped to its equivalent log file
             void convertVectorsToMap(const std::vector<std::string> &logFileNames, const std::vector<std::string> &logContents); //takes the t2 vectors, constructs LogFile objects out of them and then calls initialise maps
             void initialiseMaps(const std::map<std::string, LogFile> &logFiles); //initialises the maps for this logger
 

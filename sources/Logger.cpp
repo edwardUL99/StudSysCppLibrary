@@ -1,8 +1,10 @@
 #include "headers/Logger.h"
+#include "headers/LogWriter.h"
 #include "headers/LogFile.h"
 
 using logging::LogFile;
 using logging::Logger;
+using logging::LogWriter;
 using std::map;
 using std::ofstream;
 using std::string;
@@ -36,37 +38,27 @@ void Logger::convertVectorsToMap(const vector<string> &logFileNames, const vecto
     initialiseMaps(logFiles);
 }
 
-void Logger::initialiseMaps(const map<string, LogFile> &logFiles)
-{
-    this->logFiles = logFiles;
+void Logger::initialiseMaps(const map<string, LogFile> &logFiles) {
     for (map<string, LogFile>::const_iterator it = logFiles.begin(); it != logFiles.end(); it++)
     {
-        logWriters.insert(std::pair<LogFile, ofstream>(it->second, ofstream(it->first, std::ios::app)));
-        setLogFileContents(it->first, it->second.getContent());
+        this->logFiles.insert(std::pair<string, LogWriter>(it->first, LogWriter(it->first, it->second.getContent())));
     }
 }
 
 void Logger::addLogFile(LogFile logFile)
 {
     string fileName = logFile.getFileName();
-    logFiles.insert(std::pair<string, LogFile>(fileName, logFile));
-    logWriters.insert(std::pair<LogFile, ofstream>(logFile, ofstream(fileName, std::ios::app)));
+    logFiles.insert(std::pair<string, LogWriter>(fileName, LogWriter(fileName, logFile.getContent())));
 }
 
 void Logger::removeLogFile(const string &fileName)
 {
-    map<string, LogFile>::iterator filesIterator = logFiles.find(fileName);
+    map<string, LogWriter>::iterator filesIterator = logFiles.find(fileName);
 
     if (filesIterator != logFiles.end())
     {
-        map<LogFile, ofstream>::iterator writersIterator = logWriters.find(filesIterator->second);
+        filesIterator->second.close();
         logFiles.erase(filesIterator);
-
-        if (writersIterator != logWriters.end())
-        {
-            writersIterator->second.close();
-            logWriters.erase(writersIterator);
-        }
     }
 }
 
@@ -77,26 +69,22 @@ bool Logger::containsLogFile(const std::string &fileName) const
 
 boost::optional<LogFile> Logger::findLogFile(const string &fileName) const
 {
-    map<string, LogFile>::const_iterator filesIterator = logFiles.find(fileName);
+    map<string, LogWriter>::const_iterator filesIterator = logFiles.find(fileName);
 
     if (filesIterator != logFiles.end())
     {
-        return filesIterator->second;
+        return filesIterator->second.getLogFile();
     }
 
     return boost::none;
 }
 
-bool Logger::setLogFileContents(const std::string &fileName, const std::string &contents)
+bool Logger::setLogFileContents(const string &fileName, const string &contents)
 {
     if (containsLogFile(fileName))
     {
-        LogFile &logFile = logFiles.at(fileName);
-        logFile.setContent(contents);
-
-        ofstream &writer = logWriters.at(logFile);
-        writer << contents;
-        writer.flush();
+        LogWriter &logWriter = logFiles.at(fileName);
+        logWriter.setContent(contents);
 
         return true;
     }
@@ -104,17 +92,17 @@ bool Logger::setLogFileContents(const std::string &fileName, const std::string &
     return false;
 }
 
-bool Logger::appendToLogFile(const std::string &fileName, const std::string &line, bool newLine)
+bool Logger::appendToLogFile(const string &fileName, const string &line, bool newLine)
 {
     if (containsLogFile(fileName))
     {
-        LogFile &logFile = logFiles.at(fileName);
-        string returnedLine = logFile.appendToFile(line, newLine);
+        LogWriter &writer = logFiles.at(fileName);
 
-        ofstream &writer = logWriters.at(logFile);
-        writer << returnedLine;
-        writer.flush();
-        
+        if (newLine) {
+            writer << line;    
+        } else {
+            writer.appendToFile(line, false);
+        }
 
         return true;
     }
@@ -139,7 +127,7 @@ void Logger::flushFile(const std::string &fileName)
 {
     try
     {
-        logWriters.at(logFiles.at(fileName)).flush();
+        logFiles.at(fileName).flush();
     }
     catch (std::out_of_range &ex)
     {
@@ -148,7 +136,7 @@ void Logger::flushFile(const std::string &fileName)
 
 void Logger::flushAll()
 {
-    for (map<LogFile, ofstream>::iterator it = logWriters.begin(); it != logWriters.end(); it++)
+    for (map<string, LogWriter>::iterator it = logFiles.begin(); it != logFiles.end(); it++)
     {
         it->second.flush();
     }
