@@ -11,6 +11,7 @@ private:
 public:
     /**
      * A sentinel value to use in the case a lecturer doesn't exist
+     * Doing lecturer == Lecturer::NOT_FOUND can check if it is the sentinel object
      */
     const static Lecturer NOT_FOUND;
     Lecturer(std::string name, int age, std::string email, std::string department);
