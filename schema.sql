@@ -1,9 +1,5 @@
 /*schema here*/
 
-/*make sure its 3NF, go over sulis slides and your project and videos to make sure it is */
-
-
-/*may not be in 3NF, see comment in issue #20 on GitHub*/
 CREATE TABLE IF NOT EXISTS lecturers (
 	email VARCHAR(100),
 	name VARCHAR(100) NOT NULL,
@@ -175,3 +171,7 @@ CREATE TABLE IF NOT EXISTS student_logins (
 		ON DELETE CASCADE
 		ON UPDATE CASCADE
 );
+
+
+INSERT INTO lecturers VALUES ('NOT_FOUND@staff.mail.ie', 'NOT_FOUND', -1, 'NOT FOUND');
+INSERT INTO lecturer_accounts VALUES ('NOT_FOUND@staff.mail.ie', 'NOT_FOUND');
