@@ -13,7 +13,7 @@ private:
     Lecturer lecturer;
 
 public:
-    Module(std::string code, std::string name, int credits, Lecturer lecturer);
+    Module(std::string code, std::string name, int credits, Lecturer lecturer = Lecturer::NOT_FOUND);
     virtual ~Module() = default;
     std::string getCode() const;
     void setCode(std::string code);

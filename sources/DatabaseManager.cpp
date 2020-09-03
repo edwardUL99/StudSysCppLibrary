@@ -381,7 +381,7 @@ boost::optional<Course> DatabaseManager::getCourse(string id)
         boost::optional<Lecturer> lecturer = getLecturer(res->getString("course_leader"));
         delete res;
 
-        return Course(id, type, name, duration, lecturer.get());
+        return Course(id, type, name, duration, lecturer.get_value_or(Lecturer::NOT_FOUND));
     }
 
     delete res;
@@ -588,7 +588,7 @@ boost::optional<Module> DatabaseManager::getModule(string code)
 
         delete res;
 
-        return Module(code, name, credits, lecturer.get());
+        return Module(code, name, credits, lecturer.get_value_or(Lecturer::NOT_FOUND));
     }
 
     delete res;
@@ -749,7 +749,7 @@ vector<Announcement> DatabaseManager::getAllAnnouncements() {
         string subject = res->getString("subject");
         string text = res->getString("announcement");
         Module module = getModule(code).value();
-        Lecturer lecturer = getLecturer(email).value();
+        Lecturer lecturer = getLecturer(email).get_value_or(Lecturer::NOT_FOUND);
 
         announcements.push_back(Announcement(id, module, lecturer, subject, text));
     }

@@ -6,7 +6,6 @@ Module::Module(string code, string name, int credits, Lecturer lecturer) : lectu
     this->code = code;
     this->name = name;
     this->credits = credits;
-    this->lecturer = lecturer;
 }
 
 string Module::getCode() const {
