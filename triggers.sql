@@ -15,4 +15,13 @@ BEGIN
     END IF;
 END;//
 
+CREATE TRIGGER remove_student_registrations
+AFTER UPDATE ON modules
+FOR EACH ROW
+BEGIN 
+    IF NEW.lecturer IS NULL THEN
+        DELETE FROM student_registrations WHERE module = NEW.code;
+    END IF;
+END;//
+
 delimiter //
