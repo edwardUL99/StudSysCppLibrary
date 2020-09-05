@@ -309,6 +309,19 @@ vector<Lecturer> DatabaseManager::getAllLecturers()
     return lecturers;
 }
 
+void DatabaseManager::cleanUpNullLecturerModuleRegistrations() {
+    ResultSet *res = executeQuery("SELECT student, module FROM student_registrations JOIN modules ON module = code WHERE lecturer IS NULL;");
+
+    while (res->next()) {
+        Student student = getStudent(res->getInt("student")).get();
+        Module module = getModule(res->getString("module")).get();
+
+        remove(StudentRegistration(student, module));
+    }
+
+    delete res;
+}
+
 bool DatabaseManager::remove(const Lecturer &lecturer)
 {
     writeToLog(LogTypes::INFO, "Removing lecturer\n\t" + lecturer.getDescription() + " from " + getDatabaseInfoString());
@@ -318,6 +331,8 @@ bool DatabaseManager::remove(const Lecturer &lecturer)
 
     if (!removed)
         writeToLog(LogTypes::WARNING, "Lecturer was not removed successfully");
+
+    cleanUpNullLecturerModuleRegistrations();
 
     return removed;
 }

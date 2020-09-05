@@ -59,6 +59,8 @@ private:
     std::vector<ExamQuestion> getAllExamQuestions(int examID);
     void setLastExamID();
     void setLastAnnouncementID();
+    //Goes through all Student registrations and if the lecturer of that module is null, the registration is removed
+    void cleanUpNullLecturerModuleRegistrations();
     //following private methods throw their exceptions to their public callers
     //private add methods for answers and questions
     bool add(const ExamAnswer &answer);
