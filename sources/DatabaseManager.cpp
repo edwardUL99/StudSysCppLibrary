@@ -310,6 +310,7 @@ vector<Lecturer> DatabaseManager::getAllLecturers()
 }
 
 void DatabaseManager::cleanUpNullLecturerModuleRegistrations() {
+    writeToLog(LogTypes::INFO, "Removing any student registrations on modules that have no lecturer");
     executeUpdate("DELETE FROM student_registrations WHERE module IN(SELECT code FROM modules WHERE lecturer IS NULL);");
 }
 
