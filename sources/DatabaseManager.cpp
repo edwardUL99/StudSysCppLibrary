@@ -310,16 +310,7 @@ vector<Lecturer> DatabaseManager::getAllLecturers()
 }
 
 void DatabaseManager::cleanUpNullLecturerModuleRegistrations() {
-    ResultSet *res = executeQuery("SELECT student, module FROM student_registrations JOIN modules ON module = code WHERE lecturer IS NULL;");
-
-    while (res->next()) {
-        Student student = getStudent(res->getInt("student")).get();
-        Module module = getModule(res->getString("module")).get();
-
-        remove(StudentRegistration(student, module));
-    }
-
-    delete res;
+    executeUpdate("DELETE FROM student_registrations WHERE module IN(SELECT code FROM modules WHERE lecturer IS NULL);");
 }
 
 bool DatabaseManager::remove(const Lecturer &lecturer)
