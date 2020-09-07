@@ -935,26 +935,13 @@ int minPosition(int startPos, const std::vector<ExamQuestion> &vect)
     return min;
 }
 
-void sort(std::vector<ExamQuestion> &vect)
-{
-    int n = vect.size();
-    for (int i = 0; i < n - 1; i++)
-    {
-        int min = minPosition(i, vect); //find the position of the smallest item from the start position i, and this is the item you will want to swap
-
-        ExamQuestion temp(vect[i]);
-        vect[i] = vect[min];
-        vect[min] = temp;
-    }
-}
-
 vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
 {
     vector<ExamQuestion> questions;
 
     writeToLog(LogTypes::INFO, "Retriving all exam questions from exam with ID " + std::to_string(examID) + " from " + getDatabaseInfoString());
 
-    ResultSet *res = executeQuery("SELECT * FROM exam_questions WHERE exam = " + std::to_string(examID) + ";");
+    ResultSet *res = executeQuery("SELECT * FROM exam_questions WHERE exam = " + std::to_string(examID) + " ORDER BY num;");
 
     while (res->next())
     {
@@ -981,8 +968,6 @@ vector<ExamQuestion> DatabaseManager::getAllExamQuestions(int examID)
 
         delete res1;
     }
-
-    sort(questions);
 
     delete res;
 
