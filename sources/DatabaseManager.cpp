@@ -846,13 +846,13 @@ vector<StudentRegistration> DatabaseManager::getAllStudentRegistrations()
     return registrations;
 }
 
-vector<Student> DatabaseManager::getAllStudentRegistrationsForModule(const Module &module) {
+vector<Student> DatabaseManager::getAllStudentsRegisteredOnModule(const Module &module) {
     vector<Student> students;
 
     string code = module.getCode();
     string query = "SELECT * FROM student_registrations WHERE module = '" + code + "';";    
 
-    writeToLog(LogTypes::INFO, "Retrieving all student registrations for module " + code + " from " + getDatabaseInfoString());
+    writeToLog(LogTypes::INFO, "Retrieving all students registered on module " + code + " from " + getDatabaseInfoString());
 
     ResultSet *res = executeQuery(query);
 
@@ -864,6 +864,23 @@ vector<Student> DatabaseManager::getAllStudentRegistrationsForModule(const Modul
     delete res;
 
     return students;
+}
+
+vector<Module> DatabaseManager::getAllModulesStudentIsRegisteredOn(const Student &student) {
+    vector<Module> modules;
+
+    string id = std::to_string(student.getID());
+    string query = "SELECT * FROM student_registrations WHERE student = " + id + ";";
+
+    writeToLog(LogTypes::INFO, "Retrieving all modules student " + id + " is registered to from " + getDatabaseInfoString());
+
+    ResultSet *res = executeQuery(query);
+
+    while (res->next()) {
+        modules.push_back(getModule(res->getString("module")).get());
+    }
+
+    return modules;
 }
 
 bool DatabaseManager::add(const ExamAnswer &answer)

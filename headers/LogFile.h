@@ -17,7 +17,6 @@ namespace logging {
          * Constructs a LogFile object
          * @param fileName the name of the file
          * @param content the content to write if already present
-         * @param append whether you should append to the logfile on the hard drive
          */
         LogFile(std::string fileName = "", std::string content = "");
         /**

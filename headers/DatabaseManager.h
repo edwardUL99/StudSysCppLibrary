@@ -139,7 +139,8 @@ public:
     std::vector<Module> getAllModules();
     std::vector<Announcement> getAllAnnouncements();
     std::vector<StudentRegistration> getAllStudentRegistrations();
-    std::vector<Student> getAllStudentRegistrationsForModule(const Module &module);
+    std::vector<Student> getAllStudentsRegisteredOnModule(const Module &module);
+    std::vector<Module> getAllModulesStudentIsRegisteredOn(const Student &student);
     std::vector<Exam> getAllExams();
     std::vector<Exam> getAllExamsByModule(const Module &module);
     std::vector<ExamGrade> getAllExamGrades();

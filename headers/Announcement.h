@@ -5,7 +5,6 @@
 #include "Module.h"
 #include "Lecturer.h"
 
-//will keep time separate and have a struct as part of UI as e.g struct ui__announcement
 class Announcement : public DatabaseItem
 {
     private:

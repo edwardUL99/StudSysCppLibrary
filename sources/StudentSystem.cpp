@@ -183,16 +183,16 @@ bool StudentSystem::addCourse(const Course &course) {
     }
 }
 
-Course StudentSystem::getCourse(string id) {
-    logInfo("Attempting to retrieve course with code " + id + " from system");
-    boost::optional<Course> course = this->database.getCourse(id);
+Course StudentSystem::getCourse(string code) {
+    logInfo("Attempting to retrieve course with code " + code + " from system");
+    boost::optional<Course> course = this->database.getCourse(code);
 
     if (course) {
         logInfo("Course found");
         return course.get();
     } else {
         logError("Course not found in system");
-        throw NotFoundException("Course identified by " + id);
+        throw NotFoundException("Course identified by " + code);
     }
 }
 
@@ -331,20 +331,12 @@ bool StudentSystem::unregisterStudentModule(const Student &student, const Module
 
 std::vector<Module> StudentSystem::getStudentRegisteredModules(const Student &student) {
     logInfo("Retrieving all modules that Student " + student.getDescription() + " is registered for");
-    std::vector<Module> modules;
-
-    for (const StudentRegistration &registration : this->database.getAllStudentRegistrations()) {
-        if (registration.getStudent().getID() == student.getID()) {
-            modules.push_back(registration.getModule());
-        }
-    }
-
-    return modules;
+    return database.getAllModulesStudentIsRegisteredOn(student);
 }
 
 std::vector<Student> StudentSystem::getStudentsRegisteredOnModule(const Module &module) {
     logInfo("Retrieving all Students registered on Module " + module.getDescription());
-    return database.getAllStudentRegistrationsForModule(module);
+    return database.getAllStudentsRegisteredOnModule(module);
 }
 
 bool StudentSystem::addExam(const Exam &exam) {
