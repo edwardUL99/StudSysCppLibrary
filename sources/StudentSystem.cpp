@@ -344,15 +344,7 @@ std::vector<Module> StudentSystem::getStudentRegisteredModules(const Student &st
 
 std::vector<Student> StudentSystem::getStudentsRegisteredOnModule(const Module &module) {
     logInfo("Retrieving all Students registered on Module " + module.getDescription());
-    std::vector<Student> students;
-
-    for (const StudentRegistration &reg : this->database.getAllStudentRegistrations()) {
-        if (reg.getModule().getCode() == module.getCode()) {
-            students.push_back(reg.getStudent());
-        }
-    }
-
-    return students;
+    return database.getAllStudentRegistrationsForModule(module);
 }
 
 bool StudentSystem::addExam(const Exam &exam) {
@@ -396,15 +388,7 @@ bool StudentSystem::updateExam(const Exam &oldExam, const Exam &updatedExam) {
 
 std::vector<Exam> StudentSystem::retrieveExamsByModule(const Module &module) {
     logInfo("Retrieving all exams for Module " + module.getCode());
-    std::vector<Exam> exams;
-
-    for (const Exam &exam : this->database.getAllExams()) {
-        if (exam.getModule().getCode() == module.getCode()) {
-            exams.push_back(exam);
-        }
-    }
-
-    return exams;
+    return database.getAllExamsByModule(module);
 }
 
 bool StudentSystem::examTaken(const Exam &exam) {
@@ -419,7 +403,7 @@ bool StudentSystem::examTaken(const Exam &exam) {
 bool StudentSystem::addExamGrade(const ExamGrade &examGrade) {
     logInfo("Request to add Exam Grade " + examGrade.getDescription() + " to system");
     if (this->database.contains(examGrade)) {
-        logError("Exam Grade already exisst in the system, aborting");
+        logError("Exam Grade already exists in the system, aborting");
         throw DuplicateException(examGrade.getDescription());
     } else {
         logInfo("System does not contain the Exam Grade, adding");

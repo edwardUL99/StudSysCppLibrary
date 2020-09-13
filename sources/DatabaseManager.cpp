@@ -846,6 +846,26 @@ vector<StudentRegistration> DatabaseManager::getAllStudentRegistrations()
     return registrations;
 }
 
+vector<Student> DatabaseManager::getAllStudentRegistrationsForModule(const Module &module) {
+    vector<Student> students;
+
+    string code = module.getCode();
+    string query = "SELECT * FROM student_registrations WHERE module = '" + code + "';";    
+
+    writeToLog(LogTypes::INFO, "Retrieving all student registrations for module " + code + " from " + getDatabaseInfoString());
+
+    ResultSet *res = executeQuery(query);
+
+    while (res->next())
+    {
+        students.push_back(getStudent(res->getInt("student")).get());
+    }
+
+    delete res;
+
+    return students;
+}
+
 bool DatabaseManager::add(const ExamAnswer &answer)
 {
     try
@@ -1014,6 +1034,25 @@ vector<Exam> DatabaseManager::getAllExams()
 
     while (res->next())
     {
+        exams.push_back(getExam(res->getInt("id")).get());
+    }
+
+    delete res;
+
+    return exams;
+}
+
+vector<Exam> DatabaseManager::getAllExamsByModule(const Module &module) {
+    vector<Exam> exams;
+
+    string code = module.getCode();
+    string query = "SELECT id FROM exams WHERE module = '" + code + "';";
+
+    writeToLog(LogTypes::INFO, "Retrieving all exams for module " + code + " from " + getDatabaseInfoString());
+
+    ResultSet *res = executeQuery(query);
+
+    while (res->next()) {
         exams.push_back(getExam(res->getInt("id")).get());
     }
 
