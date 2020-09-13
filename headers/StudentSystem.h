@@ -44,7 +44,7 @@ class StudentSystem {
         Student getStudent(int id);
         bool removeStudent(const Student &student);
         bool updateStudent(int id, const Student &updatedStudent);
-        [[deprecated]]
+        [[deprecated("A student email has the format id@student.mail.ie, use substr and string.find to pull out id section")]]
         int getStudentID(std::string email);
         bool addCourse(const Course &course);
         Course getCourse(std::string id);
