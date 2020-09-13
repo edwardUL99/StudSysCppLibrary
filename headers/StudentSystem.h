@@ -44,6 +44,7 @@ class StudentSystem {
         Student getStudent(int id);
         bool removeStudent(const Student &student);
         bool updateStudent(int id, const Student &updatedStudent);
+        [[deprecated]]
         int getStudentID(std::string email);
         bool addCourse(const Course &course);
         Course getCourse(std::string id);
