@@ -38,3 +38,7 @@ The log is saved in this path as studsys.log
 
 To disable it, unset the environment variable, on Linux:
 unset STUD_LOGS
+
+# Documentation
+To generate documentation you must have doxygen and graphviz installed
+From the root of the project, run doxygen doxy.cfg
