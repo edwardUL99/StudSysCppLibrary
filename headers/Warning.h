@@ -7,7 +7,7 @@
 /**
  * This class is DEPRECATED, it will be removed in a future release
  */
-class Warning
+class [[deprecated("Log a warning with logging::logger and logging::Logger::LogTypes::Warning instead")]] Warning
 {
 private:
     std::string error;
@@ -25,6 +25,6 @@ public:
         os << w.toString();
         return os;
     }
-} __attribute__((deprecated));
+};
 
 #endif // WARNING_H
