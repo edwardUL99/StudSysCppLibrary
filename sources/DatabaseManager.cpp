@@ -348,7 +348,7 @@ bool DatabaseManager::remove(const Lecturer &lecturer)
 
 bool DatabaseManager::update(string email, const Lecturer &updatedLecturer)
 {
-    string query = "UPDATE lecturers SET name = '" + updatedLecturer.getName() + "', age = " + std::to_string(updatedLecturer.getAge()) + ", department = '" + updatedLecturer.getDepartment() + "' WHERE email = '" + email + "';";
+    string query = "UPDATE lecturers SET name = '" + updatedLecturer.getName() + "', email = '" + updatedLecturer.getEmail() + "', age = " + std::to_string(updatedLecturer.getAge()) + ", department = '" + updatedLecturer.getDepartment() + "' WHERE email = '" + email + "';";
 
     writeToLog(LogTypes::INFO, "Updating lecturer with e-mail " + email + " with query " + query + " on " + getDatabaseInfoString());
 
