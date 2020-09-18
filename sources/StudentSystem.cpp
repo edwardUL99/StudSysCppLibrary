@@ -110,13 +110,8 @@ bool StudentSystem::removeLecturer(const Lecturer &lecturer) {
 }
 
 bool StudentSystem::updateLecturer(string email, const Lecturer &updatedLecturer) {
-    try {
-        logInfo("Attempting to update lecturer " + email);
-        return this->database.update(email, updatedLecturer);
-    } catch (KeyMismatch &m) {
-        logError("Failed to update lecturer since there was a Key mismatch " + string(m.what()));
-        throw m;
-    }
+    logInfo("Attempting to update lecturer " + email);
+    return this->database.update(email, updatedLecturer);
 }
 
 bool StudentSystem::addStudent(const Student &student) {

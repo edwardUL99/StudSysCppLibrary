@@ -1431,26 +1431,17 @@ bool DatabaseManager::remove(const LecturerAccount &lecturerAccount)
 bool DatabaseManager::update(const Lecturer &lecturer, const LecturerAccount &updatedLecturerAccount)
 {
     string email = lecturer.getEmail();
-    string email1 = updatedLecturerAccount.getLecturer().getEmail();
 
-    if (email != email1)
-    {
-        writeToLog(LogTypes::ERROR, "Key mismatch between " + email + " and " + email1);
-        throw KeyMismatch(email, email1);
-    }
-    else
-    {
-        string query = "UPDATE lecturer_accounts SET pass = '" + updatedLecturerAccount.getPassword() + "' WHERE email = '" + email + "';";
+    string query = "UPDATE lecturer_accounts SET pass = '" + updatedLecturerAccount.getPassword() + "' WHERE email = '" + email + "';";
 
-        writeToLog(LogTypes::INFO, "Updating lecturer account with query " + query + " on " + getDatabaseInfoString());
+    writeToLog(LogTypes::INFO, "Updating lecturer account with query " + query + " on " + getDatabaseInfoString());
 
-        bool updated = executeUpdate(query) != 0;
+    bool updated = executeUpdate(query) != 0;
 
-        if (!updated)
-            writeToLog(LogTypes::WARNING, "Lecturer account may not have been updated successfully");
-
-        return updated;
-    }
+    if (!updated)
+        writeToLog(LogTypes::WARNING, "Lecturer account may not have been updated successfully");
+    
+    return updated;
 }
 
 bool DatabaseManager::add(const StudentAccount &studentAccount)
