@@ -23,6 +23,11 @@ class StudentSystem {
         void logInfo(std::string message);
         void logError(std::string message);
         void logWarning(std::string warning);
+        std::string markToGrade(float moduleGrade);
+        float gradeToQPV(std::string grade);
+        float calculateQCS(const Student &student, const Module &module);
+        static const int FACTOR; //the only factor allowed for now is 1
+        
 
     public:
         /**
@@ -233,6 +238,12 @@ class StudentSystem {
          */
         std::vector<Student> getStudentsRegisteredOnModule(const Module &module);
         /**
+         * Calculates the QCA for the specified student
+         * @param student the student to calculate QCA for
+         * @return true if QCA changed, false if not
+         */
+        bool calculateStudentQCA(Student &student);
+        /**
          * Attempts to add the specified exam to the system
          * @param exam the exam to add
          * @return true if the operation was a success, false otherwise
@@ -362,6 +373,11 @@ class StudentSystem {
          * @throw NotFoundException if there is no account for the student with the specified id
          */
         StudentAccount getStudentAccount(int id);
+        /**
+         * Removes the specified student account
+         * @param studentAccount the student account to remove
+         * @return true if it was successful
+         */
         bool removeAccount(const StudentAccount &studentAccount);
         /**
          * Attempts to update student account for the specified student by replacing it with the updated one

@@ -4,10 +4,14 @@
 #include "headers/KeyMismatch.h"
 #include "headers/StudentRegistration.h"
 #include "headers/Logging.h"
+#include <map>
 
 using std::string;
+using std::map;
 using logging::logger;
 using logging::LogTypes;
+
+const int StudentSystem::FACTOR = 1;
 
 StudentSystem::StudentSystem() {}
 
@@ -332,6 +336,90 @@ std::vector<Module> StudentSystem::getStudentRegisteredModules(const Student &st
 std::vector<Student> StudentSystem::getStudentsRegisteredOnModule(const Module &module) {
     logInfo("Retrieving all Students registered on Module " + module.getDescription());
     return database.getAllStudentsRegisteredOnModule(module);
+}
+
+std::string StudentSystem::markToGrade(float mark) {
+    static map<float, string> grades;
+    static bool initialised = false;
+
+    if (!initialised) {
+        initialised = true;
+        grades.insert(std::make_pair(0, "NG"));
+        grades.insert(std::make_pair(0.01, "F"));
+        grades.insert(std::make_pair(30, "D2"));
+        grades.insert(std::make_pair(35, "D1"));
+        grades.insert(std::make_pair(40, "C3"));
+        grades.insert(std::make_pair(48, "C2"));
+        grades.insert(std::make_pair(52, "C1"));
+        grades.insert(std::make_pair(56, "B3"));
+        grades.insert(std::make_pair(60, "B2"));
+        grades.insert(std::make_pair(64, "B1"));
+        grades.insert(std::make_pair(72, "A2"));
+        grades.insert(std::make_pair(80, "A1"));
+    }
+
+    string grade = "";
+
+    for (map<float, string>::iterator it = grades.begin(); it != grades.end(); it++) {
+        if (mark >= it->first) {
+            grade = it->second;
+        } else if (it->first > mark) {
+            break;
+        }
+    }
+
+    return grade;
+}
+
+float StudentSystem::gradeToQPV(std::string grade) {
+    static map<string, float> qpv;
+    static bool initialised = false;
+
+    if (!initialised) {
+        initialised = true;
+        qpv.insert(std::make_pair("A1", 4.00));
+        qpv.insert(std::make_pair("A2", 3.60));
+        qpv.insert(std::make_pair("B1", 3.20));
+        qpv.insert(std::make_pair("B2", 3.00));
+        qpv.insert(std::make_pair("B3", 2.80));
+        qpv.insert(std::make_pair("C1", 2.60));
+        qpv.insert(std::make_pair("C2", 2.40));
+        qpv.insert(std::make_pair("C3", 2.00));
+        qpv.insert(std::make_pair("D1", 1.60));
+        qpv.insert(std::make_pair("D2", 1.20));
+        qpv.insert(std::make_pair("F", 0.00));
+        qpv.insert(std::make_pair("NG", 0.00));
+    }
+
+    return qpv[grade];
+}
+
+float StudentSystem::calculateQCS(const Student &student, const Module &module) {
+    float qcs = 0.00f;
+    try {
+        ModuleGrade moduleGrade = getModuleGrade(module, student);
+        qcs = moduleGrade.getModule().getCredits() * gradeToQPV(markToGrade(moduleGrade.getMark()));
+        qcs = qcs * FACTOR;
+    } catch (NotFoundException &nf) {
+    }
+
+    return qcs;
+}
+
+bool StudentSystem::calculateStudentQCA(Student &student) {
+    std::vector<Module> modules = getStudentRegisteredModules(student);
+    int attemptedHours = 0;
+    float qcsSum = 0.00;
+
+    for (const Module &module : modules) {
+        int creditHours = module.getCredits() * FACTOR;
+        attemptedHours += creditHours;
+        qcsSum += calculateQCS(student, module); 
+        //NQH is excluded in this version
+    }
+
+    student.setQCA(qcsSum/(float)attemptedHours);
+    return database.update(student.getID(), student);
 }
 
 bool StudentSystem::addExam(const Exam &exam) {
