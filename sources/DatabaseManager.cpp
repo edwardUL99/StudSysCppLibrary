@@ -12,6 +12,7 @@
 #include "headers/StudentAccount.h"
 #include "headers/KeyMismatch.h"
 #include "headers/ExamAnswer.h"
+#include "headers/DatabaseException.h"
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -1332,7 +1333,7 @@ boost::optional<ModuleGrade> DatabaseManager::getModuleGrade(const Module &modul
 
     writeToLog(LogTypes::INFO, "Retriving module grade for student " + id + " on module " + moduleCode + " on " + getDatabaseInfoString());
 
-    ResultSet *res = this->stmt->executeQuery("SELECT * FROM module_grades WHERE module = " + moduleCode + " AND student = " + id + ";");
+    ResultSet *res = executeQuery("SELECT * FROM module_grades WHERE module = " + moduleCode + " AND student = " + id + ";");
 
     if (res->next())
     {
@@ -1587,6 +1588,8 @@ void DatabaseManager::execute(string query)
         const char *error = e.what();
         string message = formatQueryError(query, error);
         writeToLog(LogTypes::ERROR, message);
+
+        throw DatabaseException(std::string(error));
     }
 }
 
@@ -1605,7 +1608,7 @@ ResultSet *DatabaseManager::executeQuery(string query)
         string message = formatQueryError(query, error);
         writeToLog(LogTypes::ERROR, message);
 
-        return nullptr;
+        throw DatabaseException(std::string(error));
     }
 }
 
@@ -1624,23 +1627,23 @@ int DatabaseManager::executeUpdate(string query)
         string message = formatQueryError(query, error);
         writeToLog(LogTypes::ERROR, message);
 
-        return 0;
+        throw DatabaseException(std::string(error));
     }
 }
 
 void DatabaseManager::clearTable(Tables table)
 {
-    this->stmt->executeUpdate("TRUNCATE TABLE IF EXISTS " + tableNames.at(table) + ";");
+    executeUpdate("TRUNCATE TABLE IF EXISTS " + tableNames.at(table) + ";");
 }
 
 void DatabaseManager::clearDatabase()
 {
-    this->stmt->execute("SET foreign_key_checks = 0;");
+    execute("SET foreign_key_checks = 0;");
     for (int i = 0; i < MAX; i++)
     {
         clearTable(static_cast<Tables>(i));
     }
-    this->stmt->execute("SET foreign_key_checks = 1;");
+    execute("SET foreign_key_checks = 1;");
 
     setLastExamID();
 }
