@@ -108,6 +108,11 @@ Lecturer StudentSystem::getLecturer(string email) {
     }
 }
 
+std::vector<Lecturer> StudentSystem::getLecturers() {
+    logInfo("Retrieving all lecturers");
+    return this->database.getAllLecturers();
+}
+
 bool StudentSystem::removeLecturer(const Lecturer &lecturer) {
     logInfo("Request to delete lecturer " + lecturer.getDescription() + " from the system");
     return this->database.remove(lecturer);
@@ -140,6 +145,11 @@ Student StudentSystem::getStudent(int id) {
         logError("Student not found in the system");
         throw NotFoundException("Student identified by " + std::to_string(id));
     }
+}
+
+std::vector<Student> StudentSystem::getStudents() {
+    logInfo("Retrieving all students from system");
+    return this->database.getAllStudents();
 }
 
 bool StudentSystem::removeStudent(const Student &student) {

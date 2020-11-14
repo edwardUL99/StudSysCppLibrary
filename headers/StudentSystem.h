@@ -60,6 +60,11 @@ class StudentSystem {
          */
         Lecturer getLecturer(std::string email);
         /**
+         * Gets all lecturers from the system
+         * @return vector of all lecturers
+         */
+        std::vector<Lecturer> getLecturers();
+        /**
          * Attempts to remove the specified lecturer from the system
          * @param lecturer the lecturer to remove
          * @return true if the operation was a success, false if not
@@ -237,6 +242,11 @@ class StudentSystem {
          * @return vector of all students registered on the module
          */
         std::vector<Student> getStudentsRegisteredOnModule(const Module &module);
+        /**
+         * Retrieves all the students in the system
+         * @return all students in the system
+         */
+        std::vector<Student> getStudents();
         /**
          * Calculates the QCA for the specified student
          * @param student the student to calculate QCA for
