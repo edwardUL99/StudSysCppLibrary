@@ -16,19 +16,19 @@ class Predicate {
         std::function<bool(const T &)> func;
 
     public:
-        Predicate<T>::Predicate(const std::function<bool(const T &)> &predicate) {
+        Predicate(const std::function<bool(const T &)> &predicate) {
             this->func = predicate;
         }
 
-        Predicate<T>::operator std::function<bool(const T &)>() const {
+        operator std::function<bool(const T &)>() const {
             return func;
         }
 
-        bool Predicate<T>::operator()(const T &t) const {
+        bool operator()(const T &t) const {
             return this->func(t);
         }
 
-        Predicate<T> &Predicate<T>::operator==(const std::function<bool(const T &)> &predicate) {
+        Predicate<T> &operator==(const std::function<bool(const T &)> &predicate) {
             this->func = predicate;
             return *this;
         }
