@@ -2,6 +2,7 @@
 #define PREDICATE_H
 
 #include <functional>
+#include <string>
 
 /**
  * A class which wraps a std::function which always returns bool
@@ -15,10 +16,22 @@ class Predicate {
         std::function<bool(const T &)> func;
 
     public:
-        Predicate(const std::function<bool(const T &)> &predicate);
-        operator std::function<bool(const T &)>() const;
-        bool operator()(const T &t) const;
-        Predicate<T> &operator==(const std::function<bool(const T &)> &predicate);
+        Predicate<T>::Predicate(const std::function<bool(const T &)> &predicate) {
+            this->func = predicate;
+        }
+
+        Predicate<T>::operator std::function<bool(const T &)>() const {
+            return func;
+        }
+
+        bool Predicate<T>::operator()(const T &t) const {
+            return this->func(t);
+        }
+
+        Predicate<T> &Predicate<T>::operator==(const std::function<bool(const T &)> &predicate) {
+            this->func = predicate;
+            return *this;
+        }
 };
 
 #endif
